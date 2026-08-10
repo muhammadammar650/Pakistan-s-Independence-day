@@ -1,0 +1,6 @@
+{
+  "name": "14 August Independence Day Pakistan Greeting",
+  "description": "A premium mobile-first personalized greeting application for Pakistan Independence Day (Jashn-e-Azadi 14 August) with Roman Urdu message, national anthem, custom share link generator, and Adsterra integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
