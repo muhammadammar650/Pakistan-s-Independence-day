@@ -6,7 +6,6 @@ import { UrduCalligraphyCard } from './components/UrduCalligraphyCard';
 import { GreetingGenerator } from './components/GreetingGenerator';
 import { GeneratedLink } from './components/GeneratedLink';
 import { ShareButton } from './components/ShareButton';
-import { MonetagAdMockup } from './components/MonetagAdMockup';
 import { Footer } from './components/Footer';
 import { parseCurrentLocation } from './utils/encoder';
 import { GREETING_PRESETS } from './utils/presets';
@@ -116,18 +115,12 @@ export default function App() {
           onCustomizeClick={() => setIsGeneratorOpen(true)}
         />
 
-        {/* Monetag Ad Mockup */}
-        <MonetagAdMockup />
-
         {/* Personalized Message Card in Roman Urdu */}
         <PersonalizedMessageCard
           senderName={senderName}
           preset={currentPreset}
           onCelebrate={handleCelebrateClick}
         />
-
-        {/* Monetag Ad Mockup */}
-        <MonetagAdMockup />
 
         {/* Urdu Calligraphy Script Box */}
         <UrduCalligraphyCard />
@@ -149,9 +142,6 @@ export default function App() {
           senderName={senderName}
           shareUrl={generatedUrl || (typeof window !== 'undefined' ? window.location.href : '')}
         />
-
-        {/* Monetag Ad Mockup */}
-        <MonetagAdMockup />
 
         {/* Customization Drawer / Modal Form with Category Tabs */}
         <GreetingGenerator

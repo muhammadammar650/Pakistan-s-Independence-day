@@ -4,7 +4,6 @@ import { GREETING_PRESETS } from '../utils/presets';
 import { encodeGreeting, buildShareUrl } from '../utils/encoder';
 import { saveGreetingToDatabase } from '../services/supabase';
 import { triggerPatrioticConfetti } from '../utils/confetti';
-import { MonetagAdMockup } from './MonetagAdMockup';
 
 interface GreetingGeneratorProps {
   isOpen: boolean;
@@ -202,11 +201,6 @@ export const GreetingGenerator: React.FC<GreetingGeneratorProps> = ({
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Sponsored Monetag Mockup */}
-          <div className="py-1">
-            <MonetagAdMockup />
           </div>
 
           {/* Submit / Generation Loading State */}
