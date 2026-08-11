@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, CheckCircle, Sparkles, Loader2, ArrowRight, Users, Heart, User } from 'lucide-react';
 import { GREETING_PRESETS } from '../utils/presets';
 import { encodeGreeting, buildShareUrl } from '../utils/encoder';
-import { saveGreetingToDatabase } from '../services/supabase';
+import { createGreeting } from '../services/supabase';
 import { triggerPatrioticConfetti } from '../utils/confetti';
 
 interface GreetingGeneratorProps {
@@ -47,15 +47,8 @@ export const GreetingGenerator: React.FC<GreetingGeneratorProps> = ({
     const selectedIdx = GREETING_PRESETS.findIndex((p) => p.id === selectedPresetId);
     const validIdx = selectedIdx >= 0 ? selectedIdx : 0;
 
-    const encodedId = encodeGreeting(name.trim(), validIdx);
-    const shareUrl = buildShareUrl(encodedId);
-
-    // Save to DB / Local Storage
-    await saveGreetingToDatabase({
-      id: encodedId,
-      senderName: name.trim(),
-      customMsgIndex: validIdx,
-    });
+    const id = await createGreeting(name.trim(), validIdx);
+    const shareUrl = buildShareUrl(id);
 
     setIsGenerating(false);
     triggerPatrioticConfetti();

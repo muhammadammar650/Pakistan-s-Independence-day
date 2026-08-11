@@ -1,92 +1,53 @@
-import { GreetingData } from '../types';
+import { createClient } from '@supabase/supabase-js';
+import { nanoid } from 'nanoid';
+import { encodeGreeting } from '../utils/encoder';
 
-/**
- * Minimal Supabase / Local Storage service layer
- * Provides seamless client-side base64 store with optional Supabase Cloud Sync
- */
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-const SUPABASE_URL = (import.meta as unknown as { env: Record<string, string> }).env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = (import.meta as unknown as { env: Record<string, string> }).env.VITE_SUPABASE_ANON_KEY;
+export const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
-export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-
-export async function saveGreetingToDatabase(greeting: GreetingData): Promise<string> {
-  if (isSupabaseConfigured) {
-    try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/greetings`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY!,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: JSON.stringify({
-          id: greeting.id,
-          sender_name: greeting.senderName,
-          custom_msg_index: greeting.customMsgIndex || 0,
-          created_at: new Date().toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data[0] && data[0].id) {
-          return data[0].id;
-        }
-      }
-    } catch (e) {
-      console.warn('Supabase save error, falling back to instant client URL:', e);
-    }
+export async function createGreeting(name: string, presetIndex: number): Promise<string> {
+  if (!supabase) {
+    console.warn('Supabase not configured, using URL fallback');
+    return encodeGreeting(name, presetIndex);
   }
 
-  // Local Storage Cache fallback
+  let id = nanoid(8);
   try {
-    const key = `pak_greeting_${greeting.id}`;
-    localStorage.setItem(key, JSON.stringify(greeting));
-  } catch {
-    // Ignore storage quota
+    const { error } = await supabase
+      .from('greetings')
+      .insert([{ id, name, preset_index: presetIndex }]);
+      
+    if (error) {
+      if (error.code === '23505') { // unique violation
+        id = nanoid(9); // try again
+        const retry = await supabase.from('greetings').insert([{ id, name, preset_index: presetIndex }]);
+        if (retry.error) throw retry.error;
+      } else {
+        throw error;
+      }
+    }
+    return id;
+  } catch (e) {
+    console.warn('Supabase save failed, falling back to local/URL state', e);
+    return encodeGreeting(name, presetIndex);
   }
-
-  return greeting.id;
 }
 
-export async function fetchGreetingFromDatabase(id: string): Promise<GreetingData | null> {
-  // Check local cache first
+export async function getGreeting(id: string): Promise<{ name: string, presetIndex: number } | null> {
+  if (!supabase) return null;
+  
   try {
-    const cached = localStorage.getItem(`pak_greeting_${id}`);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-  } catch {
-    // Ignore
+    const { data, error } = await supabase
+      .from('greetings')
+      .select('name, preset_index')
+      .eq('id', id)
+      .single();
+      
+    if (error || !data) return null;
+    return { name: data.name, presetIndex: data.preset_index };
+  } catch (e) {
+    return null;
   }
-
-  if (isSupabaseConfigured) {
-    try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/greetings?id=eq.${id}&select=*`, {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY!,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-      });
-
-      if (response.ok) {
-        const rows = await response.json();
-        if (rows && rows.length > 0) {
-          const row = rows[0];
-          return {
-            id: row.id,
-            senderName: row.sender_name,
-            customMsgIndex: row.custom_msg_index,
-            createdAt: row.created_at,
-          };
-        }
-      }
-    } catch (e) {
-      console.warn('Supabase fetch error:', e);
-    }
-  }
-
-  return null;
 }

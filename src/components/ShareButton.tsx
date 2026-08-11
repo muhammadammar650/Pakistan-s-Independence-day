@@ -1,128 +1,137 @@
 import React, { useState } from 'react';
-import { Share2, Send, Copy, Check, MessageSquare } from 'lucide-react';
+import { Share2, Copy, CheckCircle, MessageSquare } from 'lucide-react';
 
 interface ShareButtonProps {
-  senderName: string;
   shareUrl: string;
+  senderName: string;
+  onActionWrapper?: (action: () => void) => void;
 }
 
-export const ShareButton: React.FC<ShareButtonProps> = ({ senderName, shareUrl }) => {
+export const ShareButton: React.FC<ShareButtonProps> = ({ shareUrl, senderName, onActionWrapper }) => {
   const [copied, setCopied] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
-  const displaySender = senderName.trim() || 'Pakistani Bhai';
-
-  const shareTitle = `14 August Independence Day Greeting from ${displaySender} 🇵🇰`;
-  const shareMessage = `🇵🇰 *${displaySender}* ne aap ke liye 14 August Independence Day ka khas paigham bheja hai! 💚\n\nApna paigham dekhne aur apna naam likhne ke liye click karein:\n${shareUrl}`;
-
-  const handleNativeShare = async () => {
+  const performShare = async () => {
+    const title = '14 August Jashn-e-Azadi Pakistan Mubarak 🇵🇰';
+    const text = senderName 
+      ? `${senderName} ne aapko 14 August Independence Day ka khas paigham bheja hai! Dekhne ke liye link par click karein. \n\n`
+      : 'Apne doston ke sath 14 August Independence Day ka khas Roman Urdu paigham share karein! \n\n';
+      
     if (navigator.share) {
       try {
         await navigator.share({
-          title: shareTitle,
-          text: shareMessage,
+          title,
+          text,
           url: shareUrl,
         });
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
-          handleWhatsAppShare();
+      } catch (e) {
+        if ((e as Error).name !== 'AbortError') {
+          setShowMenu(true);
         }
       }
     } else {
-      handleWhatsAppShare();
+      setShowMenu(true);
     }
   };
 
+  const handleShare = () => {
+    if (showMenu) {
+      setShowMenu(false);
+      return;
+    }
+    
+    if (onActionWrapper) {
+      onActionWrapper(() => performShare());
+    } else {
+      performShare();
+    }
+  };
+
+  const performWhatsAppShare = () => {
+    const text = senderName 
+      ? `${senderName} ne aapko 14 August Independence Day ka khas paigham bheja hai! Dekhne ke liye link par click karein. \n\n${shareUrl}`
+      : `Apne doston ke sath 14 August Independence Day ka khas Roman Urdu paigham share karein! \n\n${shareUrl}`;
+      
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    setShowMenu(false);
+  };
+
   const handleWhatsAppShare = () => {
-    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareMessage)}`;
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    if (onActionWrapper) {
+      onActionWrapper(() => performWhatsAppShare());
+    } else {
+      performWhatsAppShare();
+    }
   };
 
-  const handleFacebookShare = () => {
-    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-    window.open(fbUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleTelegramShare = () => {
-    const tgUrl = `https://t me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareMessage)}`;
-    window.open(tgUrl, '_blank', 'noopener,noreferrer');
+  const performCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        setShowMenu(false);
+      }, 2000);
+    }).catch(() => {
+      // Fallback if clipboard API fails
+      const input = document.createElement('input');
+      input.value = shareUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        setShowMenu(false);
+      }, 2000);
+    });
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (onActionWrapper) {
+      onActionWrapper(() => performCopyLink());
+    } else {
+      performCopyLink();
+    }
   };
 
   return (
-    <div id="share-section" className="w-full bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[32px] p-6 shadow-2xl my-4 text-white">
-      <div className="text-center mb-4">
-        <h3 className="text-lg font-bold text-white flex items-center justify-center gap-2">
-          <span>Aap Bhi Apne Doston Ko Share Karein</span>
-          <span className="text-amber-300">🇵🇰</span>
-        </h3>
-        <p className="text-xs text-white/70 mt-1">
-          WhatsApp aur social media par 1-tap main share karein
-        </p>
-      </div>
-
-      {/* Primary WhatsApp Big Button */}
+    <div id="share-section" className="w-full flex flex-col items-center my-4 relative">
       <button
-        id="whatsapp-share-btn"
-        onClick={handleWhatsAppShare}
-        className="w-full py-3.5 px-5 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-extrabold text-base shadow-[0_0_20px_rgba(37,211,102,0.4)] animate-pulse hover:animate-none flex items-center justify-center gap-3 transition-all active:scale-95 border border-white/20 mb-3"
+        onClick={handleShare}
+        className="w-full py-4 px-6 rounded-2xl bg-white text-[#00401a] font-extrabold text-lg shadow-xl flex items-center justify-center gap-3 transition-transform active:scale-95 border border-white/40"
       >
-        <MessageSquare className="w-5 h-5 text-white fill-white" />
-        <span>WhatsApp Par Share Karein</span>
+        <Share2 className="w-5 h-5 text-[#00401a]" />
+        <span>Share</span>
       </button>
 
-      {/* Grid of Other Social Share Channels */}
-      <div className="grid grid-cols-3 gap-2">
-        <button
-          id="native-web-share-btn"
-          onClick={handleNativeShare}
-          className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 backdrop-blur-md"
-        >
-          <Share2 className="w-3.5 h-3.5 text-green-300" />
-          <span>More Share</span>
-        </button>
-
-        <button
-          id="facebook-share-btn"
-          onClick={handleFacebookShare}
-          className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 backdrop-blur-md"
-        >
-          <Send className="w-3.5 h-3.5 text-blue-300" />
-          <span>Facebook</span>
-        </button>
-
-        <button
-          id="telegram-share-btn"
-          onClick={handleTelegramShare}
-          className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 backdrop-blur-md"
-        >
-          <Send className="w-3.5 h-3.5 text-sky-300" />
-          <span>Telegram</span>
-        </button>
-      </div>
-
-      {/* Quick Copy Link Row */}
-      <button
-        id="copy-link-alt-btn"
-        onClick={handleCopyLink}
-        className="w-full mt-3 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 flex items-center justify-center gap-2 transition-all active:scale-95 backdrop-blur-md"
-      >
-        {copied ? (
-          <>
-            <Check className="w-4 h-4 text-green-400" />
-            <span className="text-green-400">Link Copied To Clipboard!</span>
-          </>
-        ) : (
-          <>
-            <Copy className="w-4 h-4 text-green-300" />
-            <span>Copy Greeting Link</span>
-          </>
-        )}
-      </button>
+      {showMenu && (
+        <div className="absolute bottom-full left-0 right-0 mb-3 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in z-20">
+          <button
+            onClick={handleWhatsAppShare}
+            className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-sm flex items-center gap-3 transition-colors"
+          >
+            <MessageSquare className="w-4 h-4 fill-white" />
+            <span>WhatsApp</span>
+          </button>
+          <button
+            onClick={handleCopyLink}
+            className="w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center gap-3 transition-colors border border-white/10"
+          >
+            {copied ? (
+              <>
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span className="text-green-400">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                <span>Copy Link</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
