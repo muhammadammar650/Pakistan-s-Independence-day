@@ -123,6 +123,30 @@ export default function App() {
     }
   };
 
+  // Helper to update Open Graph and Twitter Card tags dynamically
+  const updateDynamicSocialMeta = (name: string) => {
+    if (!name || !name.trim()) return;
+    const cleanName = name.trim();
+    const dynamicTitle = `${cleanName} Ki Taraf Se - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+    const dynamicDesc = `${cleanName} ne aapke liye 14 August Jashn-e-Azadi ka khas paigham bheja hai! Yahan click karke apna paigham banayein.`;
+
+    document.title = dynamicTitle;
+
+    if (typeof document !== 'undefined') {
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', dynamicTitle);
+
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute('content', dynamicDesc);
+
+      const twTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twTitle) twTitle.setAttribute('content', dynamicTitle);
+
+      const twDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twDesc) twDesc.setAttribute('content', dynamicDesc);
+    }
+  };
+
   useEffect(() => {
     // 1. Initial Page Load URL Parameter Check (?n= or ?name=)
     if (typeof window !== 'undefined') {
@@ -134,12 +158,34 @@ export default function App() {
         setSenderName(cleanSender);
         setMainHeadingRoman(`${cleanSender} Ki Taraf Se Aapko 14 August Mubarak!`);
         setMainHeadingUrdu(`${cleanSender} کی طرف سے آپ کو ۱۴ اگست مبارک!`);
-        document.title = `${cleanSender} Ki Taraf Se - 14 August Mubarak 🇵🇰`;
+        updateDynamicSocialMeta(cleanSender);
       } else {
         setMainHeadingRoman('14 August Jashn-e-Azadi Mubarak!');
         setMainHeadingUrdu('۱۴ اگست جشنِ آزادی مبارک!');
-        document.title = '14 August Jashn-e-Azadi Mubarak 🇵🇰';
       }
+
+      // Ad-blocker detector check
+      setTimeout(() => {
+        const bait = document.createElement('div');
+        bait.className = 'adsbygoogle ad-zone ad-banner monetag-ad';
+        bait.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;';
+        document.body.appendChild(bait);
+
+        setTimeout(() => {
+          let blocked = bait.offsetHeight === 0 || bait.clientHeight === 0 || window.getComputedStyle(bait).display === 'none';
+          bait.remove();
+
+          if (typeof (window as any).show_11552282 === 'undefined' && typeof (window as any).showVignette === 'undefined') {
+            const monetagScript = document.querySelector('script[data-zone="11552420"], script[data-zone="268834"]');
+            if (!monetagScript) blocked = true;
+          }
+
+          if (blocked) {
+            const banner = document.getElementById('adBlockerBanner');
+            if (banner) banner.classList.remove('hidden');
+          }
+        }, 300);
+      }, 2000);
     }
 
     // 2. Real-Time Countdown to August 14, 2026 00:00:00 PKT
@@ -274,10 +320,29 @@ export default function App() {
     triggerFireworksBurst();
   };
 
+  // Helper function to explicitly trigger Monetag Vignette Banner Ad
+  const triggerVignetteBannerAd = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        if (typeof (window as any).show_11552282 === 'function') {
+          (window as any).show_11552282();
+        } else if (typeof (window as any).showVignette === 'function') {
+          (window as any).showVignette();
+        } else {
+          const ev = new CustomEvent('monetag_vignette_trigger', { detail: { zone: 11552282 } });
+          window.dispatchEvent(ev);
+        }
+      } catch (err) {
+        console.log('Vignette trigger check:', err);
+      }
+    }
+  };
+
   // Open Name Input Modal
   const handleOpenCustomizer = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsNameModalOpen(true);
+    setTimeout(triggerVignetteBannerAd, 10);
   };
 
   // Name Form Submission
@@ -293,9 +358,17 @@ export default function App() {
     startRewardTimer();
   };
 
+  // Explicitly link Vignette Banner trigger to the Reward Modal open event
+  useEffect(() => {
+    if (isRewardModalOpen) {
+      triggerVignetteBannerAd();
+    }
+  }, [isRewardModalOpen]);
+
   // Start 5-Second Rewarded Vignette Timer
   const startRewardTimer = () => {
     setIsRewardModalOpen(true);
+    triggerVignetteBannerAd();
     setTimerSecondsLeft(5);
     setIsTimerFinished(false);
 
@@ -322,7 +395,7 @@ export default function App() {
     setSenderName(cleanName);
     setMainHeadingRoman(`${cleanName} Ki Taraf Se 14 August Mubarak!`);
     setMainHeadingUrdu(`${cleanName} کی طرف سے ۱۴ اگست مبارک!`);
-    document.title = `${cleanName} Ki Taraf Se - 14 August Mubarak 🇵🇰`;
+    updateDynamicSocialMeta(cleanName);
 
     let shareUrl = `${NETLIFY_BASE_URL}/?n=${encodeURIComponent(cleanName)}`;
     if (typeof window !== 'undefined' && !window.location.origin.includes('run.app')) {
@@ -352,10 +425,13 @@ export default function App() {
     });
   };
 
-  // WhatsApp Share Handler (Triggers Confetti Burst)
+  // WhatsApp Share Handler (Triggers Confetti Burst & Vignette Banner)
   const handleWhatsAppShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!generatedShareUrl || !senderName) return;
+
+    // Explicitly trigger Vignette Banner Ad on WhatsApp Share (Naka Popunder!)
+    triggerVignetteBannerAd();
 
     // Confetti Burst Trigger
     triggerConfettiBurst(window.innerWidth / 2, window.innerHeight / 2);
@@ -434,20 +510,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* GRAND REALISTIC WAVING PAKISTAN FLAG */}
+        {/* COMPACT REALISTIC WAVING PAKISTAN FLAG */}
         <div 
           onClick={(e) => { triggerFireworksBurst(e.clientX, e.clientY); triggerConfettiBurst(e.clientX, e.clientY); }}
-          className="my-3 cursor-pointer transition-transform active:scale-95 flex items-start justify-center pl-4" 
+          className="my-2 cursor-pointer transition-transform active:scale-95 flex items-start justify-center pl-2" 
           title="Touch flag for fireworks & confetti!"
         >
           {/* Silver Metallic Flagpole */}
           <div className="relative flex flex-col items-center">
-            <div className="w-4 h-4 bg-gradient-to-tr from-yellow-500 via-yellow-300 to-amber-200 rounded-full border border-yellow-200 shadow-[0_0_12px_rgba(255,215,0,0.9)] -mb-1 z-20" />
-            <div className="w-2.5 h-48 sm:h-56 bg-gradient-to-r from-gray-400 via-slate-100 to-gray-500 rounded-full shadow-2xl border-r border-black/40" />
+            <div className="w-3.5 h-3.5 bg-gradient-to-tr from-yellow-500 via-yellow-300 to-amber-200 rounded-full border border-yellow-200 shadow-[0_0_10px_rgba(255,215,0,0.9)] -mb-1 z-20" />
+            <div className="w-2 h-36 sm:h-40 bg-gradient-to-r from-gray-400 via-slate-100 to-gray-500 rounded-full shadow-xl border-r border-black/40" />
           </div>
 
-          {/* Real Flag Cloth with Waving Physics */}
-          <div className="flag-waving-realistic relative w-68 h-38 sm:w-76 sm:h-48 overflow-hidden border-2 border-white/50 shadow-2xl bg-[#01411C]">
+          {/* Compact Flag Cloth */}
+          <div className="flag-waving-realistic relative w-48 h-28 sm:w-56 sm:h-32 overflow-hidden border-2 border-white/50 shadow-2xl bg-[#01411C]">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
               alt="Realistic Waving Flag of Pakistan" 
@@ -456,7 +532,7 @@ export default function App() {
             <div className="cloth-shimmer-overlay absolute inset-0 pointer-events-none" />
           </div>
         </div>
-        <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center -mt-1 mb-3 drop-shadow">
+        <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-0.5 mb-3 drop-shadow">
           ✨ Parcham Par Touch Karein / پرچم پر ٹچ کریں ✨
         </p>
 

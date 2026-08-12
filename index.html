@@ -10,6 +10,8 @@
   <meta name="keywords" content="14 august, 14 august 2026, pakistan independence day 2026, 14 august mubarak, jashn e azadi pakistan 2026, 14 august wish link, pakistan zindabad, whatsapp 14 august status, 14 august greeting generator" />
   <meta name="author" content="Pakistan Azadi Greetings" />
   <meta name="theme-color" content="#01411C" />
+  <meta name="rating" content="general" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
 
   <!-- Monetag Verification & Complete Setup Meta Tags -->
   <meta name="monetag" content="11552420" />
@@ -48,59 +50,103 @@
     }
   </script>
 
-  <!-- FontAwesome Icons & Google Fonts -->
+  <!-- FontAwesome Icons & Premium Google Fonts (Outfit + Plus Jakarta Sans + Noto Nastaliq Urdu) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Nastaliq+Urdu:wght@500;700&family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- ================================================== -->
   <!-- MONETAG AD SCRIPTS (Deferred & Non-Render-Blocking)-->
   <!-- ================================================== -->
   
   <!-- 1) In-Page Push Ad Script (Zone 11552420) -->
-  <script defer>(function(s){s.dataset.zone='11552420',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <script defer>(function(s){s.defer=true;s.dataset.zone='11552420';s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
   <!-- 2) 1-Click Popunder Ad Script (Zone 268834) -->
-  <script src="https://quge5.com/88/tag.min.js" data-zone="268834" async data-cfasync="false"></script>
+  <script src="https://quge5.com/88/tag.min.js" data-zone="268834" defer data-cfasync="false"></script>
 
   <!-- 3) Vignette Banner Ad Script (Zone 11552282) -->
-  <script defer>(function(s){s.dataset.zone='11552282',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <script defer>(function(s){s.defer=true;s.dataset.zone='11552282';s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+  <!-- JS AD FREQUENCY CAPPING & AUTO-BACK RECOVERY CONTROLLER -->
+  <script>
+    (function() {
+      // 1. Max 4 In-Page Push Impressions per session
+      try {
+        let pushCount = parseInt(sessionStorage.getItem('inpage_push_count') || '0', 10);
+        if (pushCount >= 4) {
+          window.addEventListener('DOMNodeInserted', function(e) {
+            if (e.target && e.target.id && (e.target.id.includes('monetag') || e.target.id.includes('inpage'))) {
+              if (pushCount >= 4 && e.target.parentNode) {
+                // Throttle excessive push elements
+                e.target.style.display = 'none';
+              }
+            }
+          });
+        } else {
+          sessionStorage.setItem('inpage_push_count', (pushCount + 1).toString());
+        }
+      } catch (err) { }
+
+      // 2. Prevent continuous click redirects on every single touch (30s cooldown)
+      let lastPopTime = 0;
+      window.addEventListener('click', function(e) {
+        const now = Date.now();
+        if (now - lastPopTime < 30000) {
+          // Cooldown active - prevent double popunder trigger on frequent fast clicks
+          e.stopPropagation ? e.stopPropagation() : null;
+        } else {
+          lastPopTime = now;
+        }
+      }, true);
+
+      // 3. Auto-Back / Focus Recovery Helper if user is redirected to external ad
+      window.addEventListener('blur', function() {
+        setTimeout(function() {
+          if (document.hidden) {
+            // Auto focus back recovery when tab returns
+            window.focus();
+          }
+        }, 1000);
+      });
+    })();
+  </script>
 
   <style>
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
       background-color: #01411C;
     }
     .font-urdu {
-      font-family: 'Amiri', serif;
+      font-family: 'Noto Nastaliq Urdu', 'Amiri', serif;
     }
 
     /* HIGHLY REALISTIC NATURAL WIND GUST WAVING FLAG ANIMATION */
     @keyframes realisticOrganicFlagWave {
       0% {
-        transform: perspective(1000px) rotateY(18deg) rotateX(4deg) skewY(-4deg) translateZ(0px) scale(1);
-        box-shadow: -20px 22px 35px rgba(0, 0, 0, 0.65), 0 0 15px rgba(255, 215, 0, 0.2);
+        transform: perspective(1000px) rotateY(16deg) rotateX(3deg) skewY(-3deg) translateZ(0px) scale(1);
+        box-shadow: -15px 18px 28px rgba(0, 0, 0, 0.65), 0 0 12px rgba(255, 215, 0, 0.2);
       }
       20% {
-        transform: perspective(1000px) rotateY(-10deg) rotateX(-3deg) skewY(3deg) translateZ(8px) scale(1.02);
-        box-shadow: 12px 18px 30px rgba(0, 0, 0, 0.5);
+        transform: perspective(1000px) rotateY(-8deg) rotateX(-2deg) skewY(2deg) translateZ(6px) scale(1.015);
+        box-shadow: 10px 14px 24px rgba(0, 0, 0, 0.5);
       }
       40% {
-        transform: perspective(1000px) rotateY(24deg) rotateX(6deg) skewY(-6deg) translateZ(12px) scale(1.035);
-        box-shadow: -24px 28px 45px rgba(255, 215, 0, 0.35);
+        transform: perspective(1000px) rotateY(20deg) rotateX(5deg) skewY(-5deg) translateZ(10px) scale(1.025);
+        box-shadow: -18px 22px 35px rgba(255, 215, 0, 0.3);
       }
       60% {
-        transform: perspective(1000px) rotateY(-14deg) rotateX(-5deg) skewY(4deg) translateZ(4px) scale(1.01);
-        box-shadow: 15px 20px 35px rgba(0, 0, 0, 0.55);
+        transform: perspective(1000px) rotateY(-12deg) rotateX(-4deg) skewY(3deg) translateZ(3px) scale(1.01);
+        box-shadow: 12px 16px 28px rgba(0, 0, 0, 0.55);
       }
       80% {
-        transform: perspective(1000px) rotateY(12deg) rotateX(2deg) skewY(-2deg) translateZ(6px) scale(1.02);
-        box-shadow: -14px 18px 30px rgba(0, 0, 0, 0.6);
+        transform: perspective(1000px) rotateY(10deg) rotateX(2deg) skewY(-2deg) translateZ(5px) scale(1.015);
+        box-shadow: -12px 15px 25px rgba(0, 0, 0, 0.6);
       }
       100% {
-        transform: perspective(1000px) rotateY(18deg) rotateX(4deg) skewY(-4deg) translateZ(0px) scale(1);
-        box-shadow: -20px 22px 35px rgba(0, 0, 0, 0.65), 0 0 15px rgba(255, 215, 0, 0.2);
+        transform: perspective(1000px) rotateY(16deg) rotateX(3deg) skewY(-3deg) translateZ(0px) scale(1);
+        box-shadow: -15px 18px 28px rgba(0, 0, 0, 0.65), 0 0 12px rgba(255, 215, 0, 0.2);
       }
     }
 
@@ -113,7 +159,7 @@
     .flag-waving-realistic {
       transform-origin: left center;
       animation: realisticOrganicFlagWave 5.5s infinite ease-in-out;
-      border-radius: 4px 20px 20px 4px;
+      border-radius: 4px 16px 16px 4px;
     }
 
     .cloth-shimmer-overlay {
@@ -132,6 +178,15 @@
   </style>
 </head>
 <body class="bg-[#01411C] text-white min-h-screen flex flex-col justify-between selection:bg-yellow-400 selection:text-black relative overflow-x-hidden">
+
+  <!-- Subtle Non-Intrusive Ad-Blocker Warning Banner -->
+  <div id="adBlockerBanner" class="hidden fixed top-2 left-1/2 -translate-x-1/2 z-[120] w-[92%] max-w-md bg-emerald-950/95 text-yellow-300 border border-yellow-400/60 rounded-xl px-3.5 py-2 text-[11px] font-bold shadow-2xl flex items-center justify-between gap-2 backdrop-blur-md">
+    <div class="flex items-center gap-1.5">
+      <i class="fa-solid fa-shield-halved text-yellow-400 text-sm shrink-0"></i>
+      <span>Ad-Blocker Detected: Baraye meherbani ad-blocker off karein taake link sahi bane! / ایڈ بلاکر بند فرمائیں</span>
+    </div>
+    <button type="button" id="btnCloseAdBlockerBanner" class="text-white hover:text-yellow-300 text-base font-bold px-1 cursor-pointer leading-none">&times;</button>
+  </div>
 
   <!-- Canvas Background for Fireworks, Sparkles & Recycled Confetti Engine -->
   <canvas id="fireworksCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
@@ -182,18 +237,18 @@
       </div>
     </div>
 
-    <!-- GRAND REALISTIC WAVING PAKISTAN FLAG WITH METALLIC FLAGPOLE -->
-    <div id="flagContainer" class="my-3 cursor-pointer transition-transform active:scale-95 flex items-start justify-center pl-4" title="Touch flag for fireworks & confetti!">
+    <!-- COMPACT REALISTIC WAVING PAKISTAN FLAG WITH METALLIC FLAGPOLE -->
+    <div id="flagContainer" class="my-2 cursor-pointer transition-transform active:scale-95 flex items-start justify-center pl-2" title="Touch flag for fireworks & confetti!">
       <!-- Silver Metallic Flagpole -->
       <div class="relative flex flex-col items-center">
         <!-- Golden Crescent Spearhead Tip -->
-        <div class="w-4 h-4 bg-gradient-to-tr from-yellow-500 via-yellow-300 to-amber-200 rounded-full border border-yellow-200 shadow-[0_0_12px_rgba(255,215,0,0.9)] -mb-1 z-20"></div>
+        <div class="w-3.5 h-3.5 bg-gradient-to-tr from-yellow-500 via-yellow-300 to-amber-200 rounded-full border border-yellow-200 shadow-[0_0_10px_rgba(255,215,0,0.9)] -mb-1 z-20"></div>
         <!-- Metallic Pole Shaft -->
-        <div class="w-2.5 h-48 sm:h-56 bg-gradient-to-r from-gray-400 via-slate-100 to-gray-500 rounded-full shadow-2xl border-r border-black/40"></div>
+        <div class="w-2 h-36 sm:h-40 bg-gradient-to-r from-gray-400 via-slate-100 to-gray-500 rounded-full shadow-xl border-r border-black/40"></div>
       </div>
 
-      <!-- Real Flag Cloth with Waving Physics & Lighting Shimmer -->
-      <div class="flag-waving-realistic relative w-68 h-38 sm:w-76 sm:h-48 overflow-hidden border-2 border-white/50 shadow-2xl bg-[#01411C]">
+      <!-- Compact Flag Cloth (Width ~200px - 220px / Height ~115px - 130px) -->
+      <div class="flag-waving-realistic relative w-48 h-28 sm:w-56 sm:h-32 overflow-hidden border-2 border-white/50 shadow-2xl bg-[#01411C]">
         <img 
           src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
           alt="Realistic Waving Flag of Pakistan" 
@@ -203,7 +258,7 @@
         <div class="cloth-shimmer-overlay absolute inset-0 pointer-events-none"></div>
       </div>
     </div>
-    <p class="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center -mt-1 mb-3 drop-shadow">
+    <p class="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-0.5 mb-3 drop-shadow">
       ✨ Parcham Par Touch Karein / پرچم پر ٹچ کریں ✨
     </p>
 
@@ -214,7 +269,7 @@
       <h1 id="mainHeadingRoman" class="text-2xl sm:text-3xl font-black text-white leading-tight mb-1 drop-shadow-md tracking-tight">
         14 August Jashn-e-Azadi Mubarak!
       </h1>
-      <h2 id="mainHeadingUrdu" class="text-xl sm:text-2xl font-bold font-urdu text-yellow-300 leading-normal mb-4">
+      <h2 id="mainHeadingUrdu" class="text-xl sm:text-2xl font-bold font-urdu text-yellow-300 leading-relaxed mb-4">
         ۱۴ اگست جشنِ آزادی مبارک!
       </h2>
 
@@ -403,7 +458,7 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT APP LOGIC WITH RECYCLED PARTICLE OBJECT POOL ENGINE -->
+  <!-- JAVASCRIPT APP LOGIC WITH RECYCLED PARTICLE OBJECT POOL ENGINE & EXPLICIT VIGNETTE TRIGGER -->
   <script>
     (function () {
       // 1. DOM Elements
@@ -439,6 +494,24 @@
 
       // Clean Netlify deployment domain format
       const NETLIFY_BASE_URL = "https://azadiwish.netlify.app";
+
+      // Helper function to explicitly trigger Monetag Vignette Banner Ad without blocking UI
+      function triggerVignetteBannerAd() {
+        try {
+          // If Monetag exposes show function or vignette dispatch
+          if (typeof window.show_11552282 === 'function') {
+            window.show_11552282();
+          } else if (typeof window.showVignette === 'function') {
+            window.showVignette();
+          } else {
+            // Trigger lightweight synthetic user event to notify vignette ad listener
+            const ev = new CustomEvent('monetag_vignette_trigger', { detail: { zone: 11552282 } });
+            window.dispatchEvent(ev);
+          }
+        } catch (e) {
+          console.log("Vignette ad trigger check:", e);
+        }
+      }
 
       // 2. Language Toggle Logic
       btnLangToggle.addEventListener('click', function () {
@@ -640,6 +713,67 @@
         setInterval(updateCD, 1000);
       }
 
+      // Dynamic Social Meta Tags Updater (Open Graph & Twitter Cards)
+      function updateDynamicSocialMeta(name) {
+        if (!name || !name.trim()) return;
+        const cleanName = name.trim();
+        const dynamicTitle = `${cleanName} Ki Taraf Se - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+        const dynamicDesc = `${cleanName} ne aapke liye 14 August Jashn-e-Azadi ka khas paigham bheja hai! Yahan click karke apna paigham banayein.`;
+
+        document.title = dynamicTitle;
+
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.setAttribute('content', dynamicTitle);
+
+        const ogDesc = document.querySelector('meta[property="og:description"]');
+        if (ogDesc) ogDesc.setAttribute('content', dynamicDesc);
+
+        const twTitle = document.querySelector('meta[name="twitter:title"]');
+        if (twTitle) twTitle.setAttribute('content', dynamicTitle);
+
+        const twDesc = document.querySelector('meta[name="twitter:description"]');
+        if (twDesc) twDesc.setAttribute('content', dynamicDesc);
+      }
+
+      // Ad-Blocker Detection Engine
+      function detectAdBlocker() {
+        const adBlockerBanner = document.getElementById('adBlockerBanner');
+        const btnCloseAdBlockerBanner = document.getElementById('btnCloseAdBlockerBanner');
+
+        if (btnCloseAdBlockerBanner && adBlockerBanner) {
+          btnCloseAdBlockerBanner.addEventListener('click', function () {
+            adBlockerBanner.classList.add('hidden');
+          });
+        }
+
+        setTimeout(function () {
+          let isBlocked = false;
+
+          // Method 1: Check bait DOM element height/display
+          const bait = document.createElement('div');
+          bait.className = 'adsbygoogle ad-zone ad-banner monetag-ad';
+          bait.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;';
+          document.body.appendChild(bait);
+
+          setTimeout(function () {
+            if (bait.offsetHeight === 0 || bait.clientHeight === 0 || window.getComputedStyle(bait).display === 'none') {
+              isBlocked = true;
+            }
+            bait.remove();
+
+            // Method 2: Check Monetag script initialization
+            if (typeof window.show_11552282 === 'undefined' && typeof window.showVignette === 'undefined') {
+              const monetagScript = document.querySelector('script[data-zone="11552420"], script[data-zone="268834"]');
+              if (!monetagScript) isBlocked = true;
+            }
+
+            if (isBlocked && adBlockerBanner) {
+              adBlockerBanner.classList.remove('hidden');
+            }
+          }, 300);
+        }, 2000);
+      }
+
       // 5. Initial URL Parameter Check (?n= or ?name=)
       function initUrlParameters() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -649,7 +783,7 @@
           const cleanSender = sender.trim();
           mainHeadingRoman.innerText = cleanSender + " Ki Taraf Se Aapko 14 August Mubarak!";
           mainHeadingUrdu.innerText = cleanSender + " کی طرف سے آپ کو ۱۴ اگست مبارک!";
-          document.title = cleanSender + " Ki Taraf Se - 14 August Mubarak 🇵🇰";
+          updateDynamicSocialMeta(cleanSender);
         } else {
           mainHeadingRoman.innerText = "14 August Jashn-e-Azadi Mubarak!";
           mainHeadingUrdu.innerText = "۱۴ اگست جشنِ آزادی مبارک!";
@@ -659,11 +793,12 @@
         shareSection.classList.add('hidden');
       }
 
-      // 6. Customizer Button Click Handler
+      // 6. Customizer Button Click Handler (Instant Modal Display + Deferred Vignette)
       btnOpenCustomizer.addEventListener('click', function (e) {
         e.stopPropagation();
         nameModal.classList.remove('hidden');
         userNameInput.focus();
+        setTimeout(triggerVignetteBannerAd, 10);
       });
 
       btnCloseNameModal.addEventListener('click', function () {
@@ -693,6 +828,7 @@
       // 7. Modal 2: 5-Second Rewarded Vignette Timer Modal
       function startRewardTimer() {
         rewardModal.classList.remove('hidden');
+        triggerVignetteBannerAd();
 
         let secondsLeft = 5;
         timerStatusHeading.innerText = `Aapka Paigham Ban Raha Hai... (${secondsLeft}s)`;
@@ -727,10 +863,10 @@
         e.stopPropagation();
         rewardModal.classList.add('hidden');
 
-        // Update Dynamic Headings
+        // Update Dynamic Headings & Social Meta Tags
         mainHeadingRoman.innerText = `${currentTypedName} Ki Taraf Se 14 August Mubarak!`;
         mainHeadingUrdu.innerText = `${currentTypedName} کی طرف سے ۱۴ اگست مبارک!`;
-        document.title = `${currentTypedName} Ki Taraf Se - 14 August Mubarak 🇵🇰`;
+        updateDynamicSocialMeta(currentTypedName);
 
         // Generate Clean Netlify Link Format
         let origin = window.location.origin;
@@ -766,10 +902,13 @@
         });
       });
 
-      // 10. WhatsApp Share Button Handler (CONFETTI BURST SPECIFICALLY TRIGGERED HERE)
+      // 10. WhatsApp Share Button Handler (Triggers Vignette Banner Ad explicitly)
       btnWhatsAppShare.addEventListener('click', function (e) {
         e.stopPropagation();
         if (!generatedLinkUrl || !currentTypedName) return;
+
+        // Trigger Vignette Banner Ad explicitly on WhatsApp Share (Naka Popunder!)
+        triggerVignetteBannerAd();
 
         // Trigger Confetti Burst Animation immediately!
         triggerConfettiBurst(window.innerWidth / 2, window.innerHeight / 2);
@@ -794,9 +933,11 @@
       // Initialize
       startCountdown();
       initUrlParameters();
+      detectAdBlocker();
     })();
   </script>
 
 </body>
 </html>
+
 
