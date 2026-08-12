@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, ArrowRight, Copy, Check, Info, Clock, X } from 'lucide-react';
 import { VignetteManager } from './utils/vignetteManager';
-import { injectMonetagScripts } from './utils/adInjector';
+import { injectMonetagScripts, injectVignetteOnly } from './utils/adInjector';
 
 interface Particle {
   active: boolean;
@@ -41,6 +41,21 @@ export default function App() {
   const [isRewardModalOpen, setIsRewardModalOpen] = useState<boolean>(false);
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(5);
   const [isTimerFinished, setIsTimerFinished] = useState<boolean>(false);
+  const [isAdBlockedFallback, setIsAdBlockedFallback] = useState<boolean>(false);
+
+  // Background Watchdog function to detect if Vignette ad is blocked/empty and silently show Jashn-e-Azadi fallback
+  const runAdWatchdog = () => {
+    const adContainer = document.getElementById('vignette-ad-container');
+    const vignetteScript = document.querySelector(`script[data-zone="11552282"], script[src*="vignette.min.js"]`);
+    
+    const isContainerEmpty = !adContainer || adContainer.childElementCount === 0 || adContainer.clientHeight < 20;
+    const isScriptMissing = !vignetteScript;
+
+    if (isContainerEmpty || isScriptMissing) {
+      console.log('[AdWatchdog] Vignette ad blocked or empty. Silently falling back to Jashn-e-Azadi celebratory message.');
+      setIsAdBlockedFallback(true);
+    }
+  };
 
   // Post-customization Share Section state
   const [showShareSection, setShowShareSection] = useState<boolean>(false);
@@ -326,16 +341,13 @@ export default function App() {
     setIsRewardModalOpen(true);
     setTimerSecondsLeft(5);
     setIsTimerFinished(false);
+    setIsAdBlockedFallback(false);
 
-    // INJECT and EXECUTE Monetag Vignette script exactly when modal opens
-    try {
-      (function(s: any) {
-        s.dataset.zone = '11552282';
-        s.src = 'https://n6wxm.com/vignette.min.js';
-      })([document.documentElement, document.body].filter(Boolean).pop()!.appendChild(document.createElement('script')));
-    } catch (err) {
-      console.warn('Vignette script injection notice:', err);
-    }
+    // Aggressive Vignette load strategy (forces checks every 500ms for 3 seconds)
+    injectVignetteOnly(
+      () => console.log('[RewardModal] Vignette script ready'),
+      () => setIsAdBlockedFallback(true)
+    );
 
     // Trigger Vignette Banner Ad safely without forced redirects
     VignetteManager.triggerVignette('reward_timer');
@@ -345,6 +357,8 @@ export default function App() {
         if (prev <= 1) {
           clearInterval(timerInterval);
           setIsTimerFinished(true);
+          // Run background watchdog when 5s timer completes
+          setTimeout(runAdWatchdog, 150);
           triggerFireworksBurst();
           triggerConfettiBurst();
           return 0;
@@ -462,23 +476,23 @@ export default function App() {
           </div>
         </div>
 
-        {/* STRAIGHT UPRIGHT PROMINENT PAKISTAN FLAG */}
+        {/* STRAIGHT UPRIGHT PROMINENT PAKISTAN FLAG WITH CLOTH WAVE INTERACTION */}
         <div 
           onClick={(e) => { 
             e.stopPropagation();
-            handleGlobalClick(e);
             triggerFireworksBurst(e.clientX, e.clientY); 
             triggerConfettiBurst(e.clientX, e.clientY); 
           }}
           className="my-5 cursor-pointer flex items-center justify-center w-full select-none" 
           title="Touch flag for fireworks & confetti!"
         >
-          <div className="w-64 sm:w-72 aspect-[16/9] relative overflow-hidden border-2 border-white/80 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(255,215,0,0.4)] bg-[#01411C] transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-90 active:shadow-inner">
+          <div className="flag-container w-64 sm:w-72 aspect-[16/9] relative overflow-hidden border-2 border-white/80 rounded-2xl bg-[#01411C]">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
               alt="Flag of Pakistan - 14 August Independence Day" 
               className="w-full h-full object-cover pointer-events-none"
             />
+            <div className="cloth-shimmer-overlay absolute inset-0 pointer-events-none opacity-40" />
           </div>
         </div>
         <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-2 mb-3 drop-shadow">
@@ -673,9 +687,26 @@ export default function App() {
               {isTimerFinished ? "آگے بڑھیں کے بٹن پر کلک کریں" : "اشتہار دیکھیں - ۵ سیکنڈ انتظار فرمائیں"}
             </p>
 
-            <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 mb-4 text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
-              <span>5 Second ishtihar timer, poora hote hi "Aage Barhein" button dabayein!</span>
+            {/* Vignette Ad Container with Watchdog Fallback */}
+            <div 
+              id="vignette-ad-container" 
+              className="my-3 min-h-[52px] bg-black/40 border border-emerald-400/30 rounded-xl p-3 flex items-center justify-center text-center transition-all"
+            >
+              {isAdBlockedFallback ? (
+                <div className="flex flex-col items-center justify-center gap-1 animate-fade-in">
+                  <span className="text-xs font-black text-yellow-300 drop-shadow">
+                    🇵🇰 Jashn-e-Azadi Mubarak! 🇵🇰
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-200 font-urdu">
+                    ۱۴ اگست کی خصوصیات کے ساتھ آپ کا لنک تیار ہے!
+                  </span>
+                </div>
+              ) : (
+                <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 w-full text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
+                  <Info className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                  <span>5 Second ishtihar timer, poora hote hi "Aage Barhein" button dabayein!</span>
+                </div>
+              )}
             </div>
 
             {/* Visual Progress Bar */}
