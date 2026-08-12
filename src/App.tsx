@@ -75,9 +75,9 @@ export default function App() {
   // STRICT DOMAIN FOR LINK GENERATION
   const MANDATORY_BASE_DOMAIN = 'https://azadiwish.netlify.app';
 
-  // Global click wrapper to track 3-click popunder rule
+  // Global click wrapper (no-op to prevent annoying popunder spam)
   const handleGlobalClick = (e: React.MouseEvent) => {
-    VignetteManager.registerClick();
+    // Intentionally clean - no popunders on micro-clicks
   };
 
   // Trigger Confetti Burst Animation
@@ -304,15 +304,12 @@ export default function App() {
   // Single-tap action: Open Name Input Modal
   const handleOpenCustomizer = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleGlobalClick(e);
     setIsNameModalOpen(true);
-    VignetteManager.triggerVignette('open_customizer');
   };
 
   // Name Form Submission
   const handleNameSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    VignetteManager.registerClick();
 
     const val = typedNameInput.trim();
     if (!val) {
@@ -340,7 +337,7 @@ export default function App() {
       console.warn('Vignette script injection notice:', err);
     }
 
-    // Trigger Vignette Banner Ad via manager
+    // Trigger Vignette Banner Ad safely without forced redirects
     VignetteManager.triggerVignette('reward_timer');
 
     const timerInterval = setInterval(() => {
@@ -360,7 +357,6 @@ export default function App() {
   // Final "Aage Barhein ➡️ / آگے بڑھیں" Handler
   const handleProceed = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleGlobalClick(e);
     setIsRewardModalOpen(false);
 
     const cleanName = typedNameInput.trim();
@@ -385,7 +381,6 @@ export default function App() {
   // Copy Link Handler
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleGlobalClick(e);
     if (!generatedShareUrl) return;
 
     navigator.clipboard.writeText(generatedShareUrl).then(() => {
@@ -400,11 +395,7 @@ export default function App() {
   // WhatsApp Share Handler
   const handleWhatsAppShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleGlobalClick(e);
     if (!generatedShareUrl || !senderName) return;
-
-    // Trigger Vignette Banner Ad via Manager
-    VignetteManager.triggerVignette('whatsapp_share');
 
     // Confetti & Fireworks celebration
     triggerConfettiBurst(window.innerWidth / 2, window.innerHeight / 2);
@@ -419,7 +410,6 @@ export default function App() {
 
   return (
     <div 
-      onClick={handleGlobalClick}
       className="min-h-screen bg-[#01411C] text-white font-roman selection:bg-yellow-400 selection:text-black relative overflow-x-hidden flex flex-col justify-between antialiased"
     >
       
@@ -480,14 +470,14 @@ export default function App() {
             triggerFireworksBurst(e.clientX, e.clientY); 
             triggerConfettiBurst(e.clientX, e.clientY); 
           }}
-          className="my-5 cursor-pointer flex items-center justify-center w-full" 
+          className="my-5 cursor-pointer flex items-center justify-center w-full select-none" 
           title="Touch flag for fireworks & confetti!"
         >
-          <div className="w-64 sm:w-72 aspect-[16/9] relative overflow-hidden border-2 border-white/80 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(255,215,0,0.4)] bg-[#01411C]">
+          <div className="w-64 sm:w-72 aspect-[16/9] relative overflow-hidden border-2 border-white/80 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(255,215,0,0.4)] bg-[#01411C] transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-90 active:shadow-inner">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
               alt="Flag of Pakistan - 14 August Independence Day" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover pointer-events-none"
             />
           </div>
         </div>
@@ -676,16 +666,16 @@ export default function App() {
             </div>
 
             <h3 className="text-base font-black text-white mb-2">
-              {isTimerFinished ? "Aapka Paigham Tayyar Hai! ✅ / آپ کا پیغام تیار ہے" : `Aapka Paigham Ban Raha Hai... (${timerSecondsLeft}s)`}
+              {isTimerFinished ? "Aapka Link Tayyar Hai! ✅ / آپ کا لنک تیار ہے" : `Ad / Ishtihar Timer (${timerSecondsLeft}s)`}
             </h3>
 
             <p className="text-xs text-emerald-200 font-bold mb-4 font-urdu">
-              برائے مہربانی ۵ سیکنڈ انتظار فرمائیں... / Baraye meherbani 5 second intizar farmayein
+              {isTimerFinished ? "آگے بڑھیں کے بٹن پر کلک کریں" : "اشتہار دیکھیں - ۵ سیکنڈ انتظار فرمائیں"}
             </p>
 
             <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 mb-4 text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
               <Info className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
-              <span>Agar ad khule toh back button dabayein, reward tayyar hai!</span>
+              <span>5 Second ishtihar timer, poora hote hi "Aage Barhein" button dabayein!</span>
             </div>
 
             {/* Visual Progress Bar */}

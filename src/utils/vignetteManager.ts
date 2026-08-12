@@ -1,23 +1,18 @@
 // State-Driven Vignette & Ad Manager
-// Manages Vignette ads and 3-click Popunder triggers safely without page navigation loops
+// Manages Vignette ads smoothly without annoying popunder spam or navigation loops
 
 type AdCallback = () => void;
 
 class VignetteManagerClass {
   private isAdLoading: boolean = false;
   private lastTriggerTime: number = 0;
-  private cooldownMs: number = 3000;
-  private clickCount: number = 0;
+  private cooldownMs: number = 25000; // 25 seconds cooldown to prevent user frustration
 
   /**
-   * Track global clicks and trigger popunder / ad on every 3rd click
+   * Passive click recorder (no auto-popunder on micro clicks)
    */
   public registerClick(): void {
-    this.clickCount++;
-    if (this.clickCount % 3 === 0) {
-      console.log(`[AdManager] 3-click threshold reached (${this.clickCount}). Triggering ad call...`);
-      this.triggerVignette('popunder_3clicks');
-    }
+    // Intentionally no-op to prevent frustrating popunders on typing/tapping
   }
 
   /**
@@ -61,3 +56,4 @@ class VignetteManagerClass {
 }
 
 export const VignetteManager = new VignetteManagerClass();
+
