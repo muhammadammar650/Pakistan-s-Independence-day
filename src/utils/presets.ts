@@ -6,25 +6,25 @@ export const GREETING_PRESETS: PresetMessage[] = [
     id: 1,
     category: 'everyone',
     categoryName: 'Everyone (Sab Ke Liye)',
-    title: 'Dill Se Jashn-e-Azadi',
+    title: 'Dill Se Jashn-e-Azadi Mubarak',
     romanUrdu:
-      'Is azadi ke mubaarak din par, aao mil kar apne pyare watan Pakistan ke liye dua karein. Yeh mulk humari pehchan, humara ghuroor aur humari shaan hai. Allah Pak humare Pakistan ko hamesha qaim-o-daim rakhe. 14 August Mubarak!',
+      'Is Azadi ke mubarak din par meri taraf se aapko aur aap ke tamaam ghar walon ko 14 August Jashn-e-Azadi bohat bohat mubarak ho! Allah Taala humare pyare watan Pakistan ko hamesha qaim, azaad aur sar-buland rakhe. Pakistan Zindabad!',
     urduText:
-      'اس آزادی کے مبارک دن پر، آؤ مل کر اپنے پیارے وطن پاکستان کے لیے دعا کریں۔ یہ ملک ہماری پہچان، ہمارا غرور اور ہماری شان ہے۔ اللہ پاک ہمارے پاکستان کو ہمیشہ قائم و دائم رکھے۔ ۱۴ اگست مبارک!',
+      'اس آزادی کے مبارک دن پر میری طرف سے آپ کو اور آپ کے تمام گھر والوں کو ۱۴ اگست جشنِ آزادی بہت بہت مبارک ہو! اللہ تعالی ہمارے پیارے وطن پاکستان کو ہمیشہ قائم، آزاد اور سر بلند رکھے۔ پاکستان زندہ باد!',
     englishTranslation:
-      'On this blessed day of freedom, let us pray together for our beloved Pakistan. May Almighty Allah keep Pakistan prosperous and peaceful forever!',
+      'Wishing you and your family a very happy 14th August Independence Day. May Almighty Allah keep Pakistan blessed and prosperous forever!',
   },
   {
     id: 2,
     category: 'everyone',
     categoryName: 'Everyone (Sab Ke Liye)',
-    title: 'Pakistan Zindabad',
+    title: 'Watan Se Mohabbat Aur Dua',
     romanUrdu:
-      'Sabz hilali parcham humara ghuroor hai! Aao aaj ke din apne shuhada aur qaidin ki qurbaniyon ko yaad karein aur ahed karein ke hum apne watan ko hamesha aage le kar jaayenge. 14 August Mubarak!',
+      'Sabz hilali parcham humari shaan aur ghuroor hai. Aao aaj ke din apne shuhada ki qurbaniyon ko khiraaj-e-tehseen pesh karein aur mulk ki taraqqi ke liye mil kar dua karein. 14 August Mubarak!',
     urduText:
-      'سبز ہلالی پرچم ہمارا غرور ہے! آؤ آج کے دن اپنے شہداء اور قائدین کی قربانیوں کو یاد کریں اور عہد کریں کہ ہم اپنے وطن کو ہمیشہ آگے لے کر جائیں گے۔ ۱۴ اگست مبارک!',
+      'سبز ہلالی پرچم ہماری شان اور غرور ہے۔ آؤ آج کے دن اپنے شہداء کی قربانیوں کو خراجِ تحسین پیش کریں اور ملک کی ترقی کے لیے مل کر دعا کریں۔ ۱۴ اگست مبارک!',
     englishTranslation:
-      'Our green and white flag is our pride! Let us honor our heroes and pledge to take Pakistan forward.',
+      'Our green flag is our pride. Let us honor the sacrifices of our heroes and pray for the peace and progress of Pakistan.',
   },
 
   // FOR FRIENDS (Doston Ke Liye)
@@ -32,50 +32,50 @@ export const GREETING_PRESETS: PresetMessage[] = [
     id: 3,
     category: 'friends',
     categoryName: 'Friends (Doston Ke Liye)',
-    title: 'Yaaron Ko Azadi Mubarak',
+    title: 'Pyare Dost Ke Naam Azadi Paigham',
     romanUrdu:
-      'Mere pyare dost! 14 August Jashn-e-Azadi bohat bohat mubarak ho. Dil dil se miley aur lab par ek hi naara ho: Pakistan Zindabad! Hamesha khush raho aur watan ki taraqqi mein apna kirdar ada karo.',
+      'Mere pyare dost! Sache doston aur azaad mulk se barh kar koi naimat nahi hoti. Aaj ke din par meri taraf se aapko aur aap ki pyari family ko 14 August Jashn-e-Azadi mubarak ho. Hamesha khush raho aur muskurate raho!',
     urduText:
-      'میرے پیارے دوست! ۱۴ اگست جشنِ آزادی بہت بہت مبارک ہو۔ دل دل سے ملیں اور لب پر ایک ہی نعرہ ہو: پاکستان زندہ باد! ہمیشہ خوش رہو۔',
+      'میرے پیارے دوست! سچے دوستوں اور آزاد ملک سے بڑھ کر کوئی نعمت نہیں ہوتی۔ آج کے دن پر میری طرف سے آپ کو اور آپ کی پیاری فیملی کو ۱۴ اگست جشنِ آزادی مبارک ہو۔ ہمیشہ خوش رہو اور مسکراتے رہو!',
     englishTranslation:
-      'My dear friend, Happy Independence Day! May our bond and our love for Pakistan stay strong forever.',
+      'My dear friend! There is no blessing greater than true friends and a free country. Happy Independence Day to you and your family!',
   },
   {
     id: 4,
     category: 'friends',
     categoryName: 'Friends (Doston Ke Liye)',
-    title: 'Dosti Aur Azadi',
+    title: 'Yaari Aur Pakistan Zindabad',
     romanUrdu:
-      'Sache doston aur azaad mulk se barh kar koi naimat nahi hoti. Aao mil kar 14 August ka jashn manayein aur Pakistan ki salamati ke liye dua karein. Jashn-e-Azadi Mubarak Yaara!',
+      'Aapko aur aap ke tamaam doston aur azizon ko 14 August Jashn-e-Azadi bohat bohat mubarak ho. Allah Taala humari dosti aur humare watan Pakistan ko hamesha salamat rakhe!',
     urduText:
-      'سچے دوستوں اور آزاد ملک سے بڑھ کر کوئی نعمت نہیں ہوتی۔ آؤ مل کر ۱۴ اگست کا جشن منائیں۔ جشنِ آزادی مبارک یارا!',
+      'آپ کو اور آپ کے تمام دوستوں اور عزیزوں کو ۱۴ اگست جشنِ آزادی بہت بہت مبارک ہو۔ اللہ تعالی ہماری دوستی اور ہمارے وطن پاکستان کو ہمیشہ سلامت رکھے!',
     englishTranslation:
-      'There is no greater blessing than true friends and a free homeland. Happy 14th August my friend!',
+      'Wishing you and your dear friends a very happy Independence Day. May our friendship and Pakistan remain safe forever!',
   },
 
-  // FOR FAMILY (Khandan Ke Liye)
+  // FOR FAMILY (Aap Ki Pyari Family Ke Liye)
   {
     id: 5,
     category: 'family',
-    categoryName: 'Family (Khandan Ke Liye)',
-    title: 'Khandan Ke Liye Azadi Dua',
+    categoryName: 'Family (Aap Ki Family Ke Liye)',
+    title: 'Aap Ki Family Ke Liye Dua',
     romanUrdu:
-      'Aapko aur humare pure ghar walon ko 14 August Jashn-e-Azadi mubarak ho. Allah Pak humare khandan aur humare mulk Pakistan ko hamesha apni hifazat mein rakhe aur aman-o-sakoon ataa farmaye. Amin!',
+      'Aapko aur aap ki pyari family ko 14 August Jashn-e-Azadi ki dheron mubarakbaad! Allah Pak aap ke ghar walon par hamesha apni rehmat aur barkat naazil farmaye aur humare watan Pakistan ko aman ka gahwara banaye. Amin!',
     urduText:
-      'آپ کو اور ہمارے پورے گھر والوں کو ۱۴ اگست جشنِ آزادی مبارک ہو۔ اللہ پاک ہمارے خاندان اور ہمارے ملک پاکستان کو ہمیشہ اپنی حفاظت میں رکھے۔ آمین!',
+      'آپ کو اور آپ کی پیاری فیملی کو ۱۴ اگست جشنِ آزادی کی ڈھیروں مبارکباد! اللہ پاک آپ کے گھر والوں پر ہمیشہ اپنی رحمت اور برکت نازل فرمائے اور ہمارے وطن پاکستان کو امن کا گہوارہ بنائے۔ آمین!',
     englishTranslation:
-      'Wishing you and our entire family a very Happy Independence Day. May Allah keep our family and Pakistan under His divine shelter.',
+      'Wishing you and your lovely family warm congratulations on Independence Day! May Allah shower His blessings upon your family and Pakistan.',
   },
   {
     id: 6,
     category: 'family',
-    categoryName: 'Family (Khandan Ke Liye)',
-    title: 'Pyare Khandan Ke Naam',
+    categoryName: 'Family (Aap Ki Family Ke Liye)',
+    title: 'Pyare Gharane Ke Naam Paigham',
     romanUrdu:
-      'Humari pehchan humara watan Pakistan aur humara pyara khandan hai. Is Azadi Day par meri taraf se aap sab ko dheron duayein aur Mubarakbaad!',
+      'Aap aur aap ka pyara gharana hamesha shad-o-abad rahe. Is Azadi Day par meri taraf se aap ko aur aap ke pure ghar walon ko dheron duayein aur Mubarakbaad! Pakistan Zindabad!',
     urduText:
-      'ہماری پہچان ہمارا وطن پاکستان اور ہمارا پیارا خاندان ہے۔ اس آزادی ڈے پر میری طرف سے آپ سب کو ڈھیروں دعائیں اور مبارکباد!',
+      'آپ اور آپ کا پیارا گھرانہ ہمیشہ شاد و آباد رہے۔ اس آزادی ڈے پر میری طرف سے آپ کو اور آپ کے پورے گھر والوں کو ڈھیروں دعائیں اور مبارکباد! پاکستان زندہ باد!',
     englishTranslation:
-      'Our identity is our homeland Pakistan and our beloved family. Sending lots of prayers and Mubarak on Independence Day!',
+      'May you and your family stay happy and prosperous forever. Warmest wishes to your entire family on Independence Day!',
   },
 ];

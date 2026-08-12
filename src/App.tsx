@@ -1,235 +1,395 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BackgroundEffects } from './components/BackgroundEffects';
+import { CountdownTimer } from './components/CountdownTimer';
 import { GreetingHero } from './components/GreetingHero';
 import { PersonalizedMessageCard } from './components/PersonalizedMessageCard';
 import { UrduCalligraphyCard } from './components/UrduCalligraphyCard';
-import { GreetingGenerator } from './components/GreetingGenerator';
-import { GeneratedLink } from './components/GeneratedLink';
 import { ShareButton } from './components/ShareButton';
 import { Footer } from './components/Footer';
-import { AdPlacement } from './components/AdPlacement';
-import { RewardedAdModal } from './components/RewardedAdModal';
-import { parseCurrentLocation } from './utils/encoder';
+import { AdsterraBanner } from './components/AdsterraBanner';
+import { TimerModal } from './components/TimerModal';
+import { parseCurrentLocation, buildShareUrl, encodeGreeting } from './utils/encoder';
 import { GREETING_PRESETS } from './utils/presets';
-import { triggerPatrioticConfetti } from './utils/confetti';
-import { getGreeting } from './services/supabase';
+import { triggerPatrioticConfetti, triggerFireworks } from './utils/confetti';
+import { loadSocialBarScript } from './utils/adManager';
+import { Sparkles, ArrowRight, Users, User, Heart, CheckCircle, PlusCircle } from 'lucide-react';
 
 export default function App() {
   const [senderName, setSenderName] = useState<string>('');
   const [presetIndex, setPresetIndex] = useState<number>(0);
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState<boolean>(false);
-  const [isRewardedModalOpen, setIsRewardedModalOpen] = useState<boolean>(false);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [dynamicHeading, setDynamicHeading] = useState<string>('');
 
-  const handleActionWithAd = (action: () => void) => {
-    setPendingAction(() => action);
-    setIsRewardedModalOpen(true);
-  };
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  // Main Form Input State
+  const [inputName, setInputName] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<'everyone' | 'friends' | 'family'>('everyone');
+  const [selectedPresetId, setSelectedPresetId] = useState<number>(1);
+
+  // Creator form visibility mode
+  const [showCreatorForm, setShowCreatorForm] = useState<boolean>(true);
+  const [isSharedLinkLoaded, setIsSharedLinkLoaded] = useState<boolean>(false);
+
+  // Modals & Timers state
+  const [isTimerModalOpen, setIsTimerModalOpen] = useState<boolean>(false);
+  const [timerModalTitle, setTimerModalTitle] = useState<string>('Aapka Paigham Ban Raha Hai...');
+  const [pendingName, setPendingName] = useState<string>('');
+  const [pendingPresetIdx, setPendingPresetIdx] = useState<number>(0);
+  const [pendingAction, setPendingAction] = useState<'create' | 'share' | null>(null);
+
+  const creatorFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const initGreeting = async () => {
-      let title = '14 August Jashn-e-Azadi Pakistan Mubarak 🇵🇰';
-      let desc = 'Create and share your personalized Jashn-e-Azadi greeting card!';
+    // Trigger Social Bar after exactly 10 seconds
+    loadSocialBarScript(10000);
 
-      const match = window.location.pathname.match(/\/g\/([^/]+)/);
-      if (match && match[1]) {
-        const routeId = match[1];
-        try {
-          const dbData = await getGreeting(routeId);
-          if (dbData) {
-            setSenderName(dbData.name);
-            setPresetIndex(dbData.presetIndex);
-            title = `${dbData.name} — 14 August Mubarak 🇵🇰`;
-            desc = `Jashn-e-Azadi greeting from ${dbData.name}. Click to open!`;
-            setIsLoading(false);
-            
-            setTimeout(() => {
-              triggerPatrioticConfetti();
-            }, 800);
-          } else {
-            // Fallback for legacy local base64 IDs
-            const legacyGreeting = parseCurrentLocation();
-            if (legacyGreeting && legacyGreeting.senderName) {
-              setSenderName(legacyGreeting.senderName);
-              setPresetIndex(legacyGreeting.customMsgIndex);
-              title = `${legacyGreeting.senderName} — 14 August Mubarak 🇵🇰`;
-              desc = `Jashn-e-Azadi greeting from ${legacyGreeting.senderName}. Click to open!`;
-              setIsLoading(false);
-              
-              setTimeout(() => {
-                triggerPatrioticConfetti();
-              }, 800);
-            } else {
-              setNotFound(true);
-              setIsLoading(false);
-            }
-          }
-        } catch {
-          setNotFound(true);
-          setIsLoading(false);
-        }
-      } else {
-        // Query param check ?n=...
-        const queryGreeting = parseCurrentLocation();
-        if (queryGreeting && queryGreeting.senderName) {
-          setSenderName(queryGreeting.senderName);
-          setPresetIndex(queryGreeting.customMsgIndex);
-          title = `${queryGreeting.senderName} — 14 August Mubarak 🇵🇰`;
-          desc = `Jashn-e-Azadi greeting from ${queryGreeting.senderName}. Click to open!`;
-          
-          setTimeout(() => {
-            triggerPatrioticConfetti();
-          }, 800);
-        }
-        setIsLoading(false);
-      }
+    // Parse URL query parameter ?name=Name or ?n=Name
+    const urlGreeting = parseCurrentLocation();
+    if (urlGreeting && urlGreeting.senderName) {
+      const name = urlGreeting.senderName;
+      setSenderName(name);
+      setPresetIndex(urlGreeting.customMsgIndex || 0);
+      setIsSharedLinkLoaded(true);
+      setShowCreatorForm(false); // Hide form initially so they see sender message first
       
-      document.title = title;
-      updateMetaTags(title, desc);
-    };
+      const shareLink = buildShareUrl(encodeGreeting(name, urlGreeting.customMsgIndex || 0));
+      setGeneratedUrl(shareLink);
 
-    initGreeting();
+      setDynamicHeading(`${name} ki taraf se 14 August Mubarak!`);
+      document.title = `${name} ki taraf se - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+    }
   }, []);
 
-  const updateMetaTags = (title: string, description: string) => {
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
-    
-    if (ogTitle) ogTitle.setAttribute('content', title);
-    if (ogDesc) ogDesc.setAttribute('content', description);
-    if (twitterTitle) twitterTitle.setAttribute('content', title);
-    if (twitterDesc) twitterDesc.setAttribute('content', description);
+  const handleEmojiAdd = (emoji: string) => {
+    setInputName((prev) => prev + emoji);
+  };
+
+  // Open Creator Form for new user
+  const handleOpenCreator = () => {
+    setShowCreatorForm(true);
+    setTimeout(() => {
+      creatorFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  // Form Submission
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanName = inputName.trim();
+    if (!cleanName) {
+      alert("Apna naam likhein!");
+      return;
+    }
+
+    const selectedIdx = GREETING_PRESETS.findIndex((p) => p.id === selectedPresetId);
+    const validIdx = selectedIdx >= 0 ? selectedIdx : 0;
+
+    setPendingName(cleanName);
+    setPendingPresetIdx(validIdx);
+    setPendingAction('create');
+    setTimerModalTitle('Aapka Paigham Ban Raha Hai...');
+    setIsTimerModalOpen(true);
+  };
+
+  // Triggered when user clicks WhatsApp Share button
+  const handleShareClick = () => {
+    setPendingAction('share');
+    setTimerModalTitle('Share Link Tayyar Ho Raha Hai...');
+    setIsTimerModalOpen(true);
+  };
+
+  // Called when 5-second timer completes in TimerModal and user clicks Proceed
+  const handleTimerModalProceed = () => {
+    setIsTimerModalOpen(false);
+
+    if (pendingAction === 'share') {
+      const shareLink = generatedUrl || (typeof window !== 'undefined' ? window.location.href : '');
+      const message = `Dekhein ${senderName || 'Ek Pakistani'} ne aapke liye 14 August Jashn-e-Azadi ka khas paigham bheja hai! Yahan click karke dekhein: ${shareLink}`;
+      const whatsappWebLink = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      
+      try {
+        window.location.href = `whatsapp://send?text=${encodeURIComponent(message)}`;
+        setTimeout(() => {
+          window.open(whatsappWebLink, '_blank');
+        }, 500);
+      } catch {
+        window.open(whatsappWebLink, '_blank');
+      }
+      setPendingAction(null);
+      return;
+    }
+
+    if (pendingAction === 'create') {
+      const finalName = pendingName;
+      const finalPresetIdx = pendingPresetIdx;
+      
+      setSenderName(finalName);
+      setPresetIndex(finalPresetIdx);
+
+      // Build unique share URL ?name=TypedName
+      const queryStr = encodeGreeting(finalName, finalPresetIdx);
+      const newShareUrl = buildShareUrl(queryStr);
+      setGeneratedUrl(newShareUrl);
+
+      // Update URL in browser bar dynamically without page reload
+      if (typeof window !== 'undefined' && window.history) {
+        window.history.pushState({}, '', newShareUrl);
+      }
+
+      // Dynamic Heading update: "[Typed Name] ki taraf se 14 August Mubarak!"
+      const heading = `${finalName} ki taraf se 14 August Mubarak!`;
+      setDynamicHeading(heading);
+      document.title = `${finalName} - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+
+      setIsSharedLinkLoaded(true);
+      setShowCreatorForm(false);
+
+      // Celebrate with confetti & fireworks
+      triggerPatrioticConfetti();
+      triggerFireworks();
+      setPendingAction(null);
+    }
   };
 
   const currentPreset = GREETING_PRESETS[presetIndex] || GREETING_PRESETS[0];
-
-  const handleLinkGenerated = (url: string, name: string, selectedIdx: number) => {
-    setGeneratedUrl(url);
-    setSenderName(name);
-    setPresetIndex(selectedIdx);
-    const title = `${name} — 14 August Mubarak 🇵🇰`;
-    document.title = title;
-    updateMetaTags(title, `Jashn-e-Azadi greeting from ${name}. Click to open!`);
-  };
-
-  const handleCelebrateClick = () => {
-    triggerPatrioticConfetti();
-  };
+  const filteredPresets = GREETING_PRESETS.filter((p) => p.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#002e13] text-white font-sans selection:bg-white selection:text-[#00401a] relative overflow-x-hidden antialiased">
+    <div className="min-h-screen bg-[#002e13] text-white font-sans selection:bg-white selection:text-[#00401a] relative overflow-x-hidden antialiased flex flex-col justify-between">
       
-      {/* Background Visual Layer with 3D Effects */}
-      <BackgroundEffects />
+      <div>
+        {/* Background Visual Layer */}
+        <BackgroundEffects />
 
-      {/* Top Header Navbar with Website Logo */}
-      <header className="relative z-20 w-full pt-4 pb-2 px-4 flex items-center justify-between max-w-md mx-auto border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg"
-            alt="14 August Pakistan Logo"
-            className="w-9 h-6 object-cover rounded-sm drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]"
+        {/* Top Header */}
+        <header className="relative z-20 w-full pt-3 pb-2 px-4 flex items-center justify-between max-w-md mx-auto border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg"
+              alt="14 August Pakistan Logo"
+              className="w-8 h-5 object-cover rounded-sm drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]"
+            />
+            <div>
+              <h1 className="text-xs font-extrabold text-white tracking-wide flex items-center gap-1">
+                <span>Jashn-e-Azadi</span>
+                <span className="text-green-300 font-black">14 August</span>
+              </h1>
+              <p className="text-[9px] text-green-300 font-mono tracking-wider">PAKISTAN ZINDABAD 🇵🇰</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Real-Time Countdown Section (August 14) */}
+        <CountdownTimer />
+
+        {/* Middle Banner Ad (320x50) directly below countdown */}
+        <AdsterraBanner type="middle_320x50" />
+
+        {/* Main Content Area */}
+        <main className="relative z-10 max-w-md mx-auto px-4 pb-4 flex flex-col items-center">
+          
+          {/* Dynamic Festive Greeting Hero */}
+          <GreetingHero
+            senderName={senderName}
+            dynamicHeading={dynamicHeading}
           />
-          <div>
-            <h1 className="text-sm font-extrabold text-white tracking-wide flex items-center gap-1.5">
-              <span>Jashn-e-Azadi</span>
-              <span className="text-green-300 font-black">14 August</span>
-            </h1>
-            <p className="text-[10px] text-green-300 font-mono tracking-wider">PAKISTAN ZINDABAD 🇵🇰</p>
-          </div>
-        </div>
-      </header>
 
-      {/* Main Content Area - Mobile First Centered Layout */}
-      <main className="relative z-10 max-w-md mx-auto px-4 pb-6 flex flex-col items-center">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh]">
-            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-white/80 font-medium">Loading greeting...</p>
-          </div>
-        ) : notFound ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">Greeting Not Found</h2>
-            <p className="text-white/80 mb-6">The link you followed might be invalid or expired.</p>
-            <button
-              onClick={() => {
-                setNotFound(false);
-                setIsGeneratorOpen(true);
-              }}
-              className="py-3 px-6 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold transition-all"
-            >
-              Create New Greeting
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Patriotic Hero Section with 3D Rotating Flag */}
-            <GreetingHero
-              senderName={senderName}
-              onCustomizeClick={() => handleActionWithAd(() => setIsGeneratorOpen(true))}
-            />
-
-            {/* Personalized Message Card in Roman Urdu */}
-            <PersonalizedMessageCard
-              senderName={senderName}
-              preset={currentPreset}
-              onCelebrate={handleCelebrateClick}
-            />
-
-            {/* Urdu Calligraphy Script Box */}
-            <UrduCalligraphyCard />
-
-            {/* Generated Link Card (Shows after customizing) */}
-            {generatedUrl && (
-              <GeneratedLink
-                shareUrl={generatedUrl}
+          {/* VIEW SENDER MESSAGE SECTION (If link was shared) */}
+          {isSharedLinkLoaded && (
+            <div className="w-full animate-fade-in">
+              {/* Personalized Wish Message Card */}
+              <PersonalizedMessageCard
                 senderName={senderName}
-                onOpenShare={() => {
-                  const shareSection = document.getElementById('share-section');
-                  shareSection?.scrollIntoView({ behavior: 'smooth' });
+                preset={currentPreset}
+                onCelebrate={() => {
+                  triggerPatrioticConfetti();
+                  triggerFireworks();
                 }}
               />
-            )}
 
-            {/* Share Section Buttons */}
-            <ShareButton
-              senderName={senderName}
-              shareUrl={generatedUrl || (typeof window !== 'undefined' ? window.location.href : '')}
-              onActionWrapper={handleActionWithAd}
-            />
+              {/* Urdu Calligraphy Card */}
+              <UrduCalligraphyCard />
 
-            {/* Banner Ad Area */}
-            <AdPlacement type="native" />
-            {/* Rewarded Ad Placement */}
-            <AdPlacement type="rewarded" />
-          </>
-        )}
+              {/* Sharing & Copy Section */}
+              <ShareButton
+                senderName={senderName}
+                shareUrl={generatedUrl || (typeof window !== 'undefined' ? window.location.href : '')}
+                onShareClick={handleShareClick}
+              />
+              
+              {/* Mandatory Prominent Button: "Aap Bhi Apna Paigham Banayein" */}
+              <div className="my-5 p-4 bg-gradient-to-r from-amber-500/20 via-green-500/20 to-emerald-500/20 rounded-2xl border-2 border-green-400/50 backdrop-blur-xl text-center shadow-2xl">
+                <p className="text-xs font-black text-yellow-300 uppercase tracking-wider mb-2">
+                  ✨ Aap Bhi Apne Naam Ka Link Banayein ✨
+                </p>
+                <button
+                  id="create-own-link-btn"
+                  type="button"
+                  onClick={handleOpenCreator}
+                  className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-extrabold text-base shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 border border-white/40 cursor-pointer animate-bounce"
+                >
+                  <PlusCircle className="w-5 h-5 text-yellow-300" />
+                  <span>Apna Paigham Banayein ➡️</span>
+                </button>
+              </div>
+            </div>
+          )}
 
-        {/* Customization Drawer / Modal Form with Category Tabs */}
-        <GreetingGenerator
-          isOpen={isGeneratorOpen}
-          onClose={() => setIsGeneratorOpen(false)}
-          onLinkGenerated={handleLinkGenerated}
-        />
-        <RewardedAdModal 
-          isOpen={isRewardedModalOpen} 
-          onClose={() => {
-            setIsRewardedModalOpen(false);
-            if (pendingAction) {
-              pendingAction();
-              setPendingAction(null);
-            }
-          }} 
-        />
-      </main>
+          {/* UNIFIED CREATOR FORM */}
+          {showCreatorForm && (
+            <div ref={creatorFormRef} className="w-full my-4 p-5 bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl animate-fade-in">
+              <div className="flex items-center gap-2 mb-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" alt="Pakistan Flag" className="w-6 h-4 object-cover rounded-xs" />
+                <h2 className="text-base font-extrabold text-white">Apna Naam Aur Paigham Banayein</h2>
+              </div>
 
-      {/* Footer */}
-      <Footer />
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                {/* Input Name */}
+                <div>
+                  <label htmlFor="user-name-input" className="block text-xs font-bold text-green-300 uppercase tracking-widest mb-1 ml-0.5">
+                    Aap Ka Naam
+                  </label>
+                  <input
+                    id="user-name-input"
+                    type="text"
+                    value={inputName}
+                    onChange={(e) => setInputName(e.target.value)}
+                    placeholder="Yahan apna naam likhein..."
+                    className="w-full px-4 py-3 bg-black/40 border border-white/25 focus:border-green-400 rounded-xl text-white placeholder:text-white/50 outline-none transition-all font-semibold text-sm backdrop-blur-md"
+                  />
+
+                  {/* Fast Emoji Buttons */}
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className="text-[11px] text-white/70 font-medium">Fast Emoji:</span>
+                    {['🇵🇰', '💚', '✨', '⭐', '🔥'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleEmojiAdd(emoji)}
+                        className="px-2 py-0.5 rounded-lg bg-white/10 border border-white/20 text-xs hover:bg-white/20 transition-colors cursor-pointer"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preset Category Tabs */}
+                <div>
+                  <label className="block text-xs font-bold text-green-300 uppercase tracking-widest mb-1.5 ml-0.5">
+                    Paigham Select Karein
+                  </label>
+                  
+                  <div className="grid grid-cols-3 gap-1 p-1 bg-black/30 rounded-xl border border-white/15 mb-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveCategory('everyone');
+                        const first = GREETING_PRESETS.find((p) => p.category === 'everyone');
+                        if (first) setSelectedPresetId(first.id);
+                      }}
+                      className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        activeCategory === 'everyone'
+                          ? 'bg-white text-[#00401a] shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5 shrink-0" />
+                      <span>Sab Ke Liye</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveCategory('friends');
+                        const first = GREETING_PRESETS.find((p) => p.category === 'friends');
+                        if (first) setSelectedPresetId(first.id);
+                      }}
+                      className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        activeCategory === 'friends'
+                          ? 'bg-white text-[#00401a] shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      <User className="w-3.5 h-3.5 shrink-0" />
+                      <span>Doston Ke Liye</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveCategory('family');
+                        const first = GREETING_PRESETS.find((p) => p.category === 'family');
+                        if (first) setSelectedPresetId(first.id);
+                      }}
+                      className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        activeCategory === 'family'
+                          ? 'bg-white text-[#00401a] shadow-md'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      <Heart className="w-3.5 h-3.5 shrink-0 text-rose-500" />
+                      <span>Family Ke Liye</span>
+                    </button>
+                  </div>
+
+                  {/* Presets List */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {filteredPresets.map((preset) => (
+                      <div
+                        key={preset.id}
+                        onClick={() => setSelectedPresetId(preset.id)}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                          selectedPresetId === preset.id
+                            ? 'bg-white/20 border-green-400 text-white shadow-md backdrop-blur-xl'
+                            : 'bg-black/20 border-white/10 text-white/80 hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-green-300">{preset.title}</p>
+                          {selectedPresetId === preset.id && <CheckCircle className="w-4 h-4 text-green-400" />}
+                        </div>
+                        <p className="text-xs text-white/90 line-clamp-2 mt-1 leading-relaxed">
+                          "{preset.romanUrdu}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Primary Action Button */}
+                <button
+                  id="main-generate-btn"
+                  type="submit"
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-black text-base shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 border border-white/40 cursor-pointer"
+                >
+                  <Sparkles className="w-5 h-5 text-white" />
+                  <span>Apna Paigham Banayein</span>
+                  <ArrowRight className="w-5 h-5 text-white" />
+                </button>
+              </form>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+      <div>
+        {/* Bottom Banner Ad (468x60) directly above footer */}
+        <AdsterraBanner type="bottom_468x60" />
+
+        {/* Footer at the very bottom */}
+        <Footer />
+      </div>
+
+      {/* 5-Second Rewarded Ad Modal */}
+      <TimerModal
+        isOpen={isTimerModalOpen}
+        userName={pendingName || senderName}
+        title={timerModalTitle}
+        onClose={() => setIsTimerModalOpen(false)}
+        onProceed={handleTimerModalProceed}
+      />
+
     </div>
   );
 }

@@ -1,25 +1,26 @@
 import React from 'react';
-import { Sparkles, Edit3, Heart, Flag } from 'lucide-react';
+import { Sparkles, Flag } from 'lucide-react';
 import { triggerFireworks, triggerPatrioticConfetti } from '../utils/confetti';
 import { Pakistan3DFlag } from './Pakistan3DFlag';
 
 interface GreetingHeroProps {
-  onCustomizeClick: () => void;
   senderName?: string;
+  dynamicHeading?: string;
 }
 
-export const GreetingHero: React.FC<GreetingHeroProps> = ({ onCustomizeClick, senderName }) => {
+export const GreetingHero: React.FC<GreetingHeroProps> = ({ senderName, dynamicHeading }) => {
   const handleCelebrate = () => {
     triggerPatrioticConfetti();
     triggerFireworks();
   };
 
   return (
-    <section className="relative z-10 pt-10 pb-6 px-4 text-center max-w-md mx-auto flex flex-col items-center">
-      {/* 14 August Patriotic Badge */}
+    <section className="relative z-10 pt-1 pb-2 px-4 text-center max-w-md mx-auto flex flex-col items-center">
+      
+      {/* 14 August Badge */}
       <div
         onClick={handleCelebrate}
-        className="cursor-pointer inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-lg text-green-300 font-bold text-xs uppercase tracking-widest mb-4 transition-transform active:scale-95"
+        className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-md text-green-300 font-bold text-xs uppercase tracking-widest mb-1.5 transition-transform active:scale-95"
       >
         <span className="text-base">🇵🇰</span>
         <span className="text-white font-semibold">14 AUGUST</span>
@@ -27,52 +28,42 @@ export const GreetingHero: React.FC<GreetingHeroProps> = ({ onCustomizeClick, se
         <Sparkles className="w-3.5 h-3.5 text-green-300 animate-pulse" />
       </div>
 
-      {/* Realistic Waving Pakistan Flag */}
-      <div className="my-2">
+      {/* Waving Pakistan Flag */}
+      <div className="my-0.5">
         <Pakistan3DFlag onClick={handleCelebrate} />
         
-        {/* Click Prompt Micro-Pill */}
-        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-[11px] text-green-300 font-mono tracking-wider backdrop-blur-md">
+        <div className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/40 border border-white/20 text-[10px] text-green-300 font-mono tracking-wider backdrop-blur-md">
           <Flag className="w-3 h-3 text-green-300" />
-          <span>Tap Flag For Fireworks</span>
+          <span>Parcham Par Touch Karein</span>
         </div>
       </div>
 
-      {/* Main Title - White and Green Words */}
-      <h1 className="mt-4 text-3xl sm:text-4xl font-extrabold text-white tracking-tight drop-shadow-md">
-        14 August <span className="text-green-300 font-black">Independence Day</span>
-      </h1>
-
-      <p className="mt-2.5 text-white/95 font-medium text-sm leading-relaxed max-w-xs">
-        {senderName ? (
-          <span className="inline-block bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20 text-white font-semibold shadow-md">
-            Special Greeting Sent By <strong className="text-green-300 font-bold">{senderName}</strong>
+      {/* Main Dynamic Heading in Roman Urdu */}
+      <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold text-white tracking-tight drop-shadow-md leading-tight">
+        {dynamicHeading ? (
+          <span className="text-yellow-300 drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">
+            {dynamicHeading}
+          </span>
+        ) : senderName ? (
+          <span>
+            <strong className="text-yellow-300">{senderName}</strong> Ki Taraf Se Aapko 14 August Mubarak!
           </span>
         ) : (
-          'Aap sab ko Jashn-e-Azadi bohat bohat Mubarak ho! Pakistan Zindabad!'
+          <span>
+            Aapko Jashn-e-Azadi <span className="text-green-300 font-black">14 August</span> Mubarak Ho! 🇵🇰
+          </span>
+        )}
+      </h1>
+
+      <p className="mt-1.5 text-white/90 font-medium text-xs sm:text-sm leading-relaxed max-w-xs">
+        {senderName ? (
+          <span className="inline-block bg-black/30 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20 text-green-200 font-semibold shadow-sm">
+            Khas Paigham Bheja Gaya Hai ❤️
+          </span>
+        ) : (
+          'Sabz hilali parcham humari shaan hai, Pakistan Zindabad!'
         )}
       </p>
-
-      {/* Primary Action Buttons */}
-      <div className="mt-5 w-full flex flex-col gap-2.5">
-        <button
-          id="hero-customize-btn"
-          onClick={onCustomizeClick}
-          className="w-full py-3.5 px-6 rounded-2xl bg-white text-[#00401a] font-black text-base shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 border border-white/40"
-        >
-          <Edit3 className="w-5 h-5 text-[#00401a]" />
-          <span>Apna Naam Likho (Customize)</span>
-        </button>
-
-        <button
-          id="hero-celebrate-btn"
-          onClick={handleCelebrate}
-          className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 backdrop-blur-md flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md"
-        >
-          <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />
-          <span>Fireworks & Confetti Pop 🇵🇰</span>
-        </button>
-      </div>
     </section>
   );
 };

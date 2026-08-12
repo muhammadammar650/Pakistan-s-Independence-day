@@ -3,23 +3,20 @@ import { Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full py-8 px-4 text-center text-white/90 text-xs border-t border-white/15 mt-8 relative z-10 bg-white/5 backdrop-blur-2xl">
-      <div className="max-w-md mx-auto space-y-2">
-        <div className="flex items-center justify-center gap-2 font-bold text-sm text-white">
-          <span>🇵🇰</span>
-          <span>14 August Jashn-e-Azadi</span>
-          <span>🇵🇰</span>
-        </div>
+    <footer className="w-full py-6 px-4 text-center text-white text-sm font-medium relative z-10 bg-black/40 backdrop-blur-md border-t border-white/10 flex flex-col items-center gap-2">
+      <div className="text-base sm:text-lg font-extrabold tracking-wide text-green-300 drop-shadow-md flex items-center justify-center gap-2">
+        <span>🇵🇰</span>
+        <span>14 August Jashn-e-Azadi Mubarak</span>
+        <span>🇵🇰</span>
+      </div>
+      
+      <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-white/90">
+        <span>Pyare Pakistan Ke Liye Muhabbat Se Banaya Gaya</span>
+        <Heart className="w-4 h-4 text-rose-500 fill-rose-500 animate-pulse inline" />
+      </div>
 
-        <p className="flex items-center justify-center gap-1.5 text-white/90 font-medium">
-          <span>Made with</span>
-          <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-pulse" />
-          <span>for Pakistan</span>
-        </p>
-
-        <p className="text-sm text-green-300 font-serif tracking-wider pt-1">
-          پاکستان ہمیشہ زندہ باد
-        </p>
+      <div className="text-sm sm:text-base font-serif font-bold text-green-300 tracking-wider pt-0.5">
+        پاکستان ہمیشہ زندہ باد
       </div>
     </footer>
   );
