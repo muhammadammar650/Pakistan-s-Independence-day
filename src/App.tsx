@@ -1,394 +1,665 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BackgroundEffects } from './components/BackgroundEffects';
-import { CountdownTimer } from './components/CountdownTimer';
-import { GreetingHero } from './components/GreetingHero';
-import { PersonalizedMessageCard } from './components/PersonalizedMessageCard';
-import { UrduCalligraphyCard } from './components/UrduCalligraphyCard';
-import { ShareButton } from './components/ShareButton';
-import { Footer } from './components/Footer';
-import { AdsterraBanner } from './components/AdsterraBanner';
-import { TimerModal } from './components/TimerModal';
-import { parseCurrentLocation, buildShareUrl, encodeGreeting } from './utils/encoder';
-import { GREETING_PRESETS } from './utils/presets';
-import { triggerPatrioticConfetti, triggerFireworks } from './utils/confetti';
-import { loadSocialBarScript } from './utils/adManager';
-import { Sparkles, ArrowRight, Users, User, Heart, CheckCircle, PlusCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, Copy, Check, Globe, Info, Clock } from 'lucide-react';
+
+interface Particle {
+  active: boolean;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  radius: number;
+  alpha: number;
+  decay: number;
+}
+
+interface ConfettiPiece {
+  active: boolean;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  rotation: number;
+  vRotation: number;
+  color: string;
+  alpha: number;
+  decay: number;
+  isRect: boolean;
+}
 
 export default function App() {
   const [senderName, setSenderName] = useState<string>('');
-  const [presetIndex, setPresetIndex] = useState<number>(0);
-  const [generatedUrl, setGeneratedUrl] = useState<string>('');
-  const [dynamicHeading, setDynamicHeading] = useState<string>('');
+  const [mainHeadingRoman, setMainHeadingRoman] = useState<string>('14 August Jashn-e-Azadi Mubarak!');
+  const [mainHeadingUrdu, setMainHeadingUrdu] = useState<string>('۱۴ اگست جشنِ آزادی مبارک!');
+  const [typedNameInput, setTypedNameInput] = useState<string>('');
+  const [isUrduPrimary, setIsUrduPrimary] = useState<boolean>(false);
+  
+  // Modals state
+  const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
+  const [isRewardModalOpen, setIsRewardModalOpen] = useState<boolean>(false);
+  const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(5);
+  const [isTimerFinished, setIsTimerFinished] = useState<boolean>(false);
 
-  // Main Form Input State
-  const [inputName, setInputName] = useState<string>('');
-  const [activeCategory, setActiveCategory] = useState<'everyone' | 'friends' | 'family'>('everyone');
-  const [selectedPresetId, setSelectedPresetId] = useState<number>(1);
+  // Post-customization Share Section state
+  const [showShareSection, setShowShareSection] = useState<boolean>(false);
+  const [generatedShareUrl, setGeneratedShareUrl] = useState<string>('');
+  const [copiedFeedback, setCopiedFeedback] = useState<boolean>(false);
 
-  // Creator form visibility mode
-  const [showCreatorForm, setShowCreatorForm] = useState<boolean>(true);
-  const [isSharedLinkLoaded, setIsSharedLinkLoaded] = useState<boolean>(false);
+  // Countdown state to Aug 14, 2026 00:00:00 PKT
+  const [cdDays, setCdDays] = useState<string>('00');
+  const [cdHours, setCdHours] = useState<string>('00');
+  const [cdMinutes, setCdMinutes] = useState<string>('00');
+  const [cdSeconds, setCdSeconds] = useState<string>('00');
 
-  // Modals & Timers state
-  const [isTimerModalOpen, setIsTimerModalOpen] = useState<boolean>(false);
-  const [timerModalTitle, setTimerModalTitle] = useState<string>('Aapka Paigham Ban Raha Hai...');
-  const [pendingName, setPendingName] = useState<string>('');
-  const [pendingPresetIdx, setPendingPresetIdx] = useState<number>(0);
-  const [pendingAction, setPendingAction] = useState<'create' | 'share' | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const creatorFormRef = useRef<HTMLDivElement>(null);
+  // RECYCLED PARTICLE OBJECT POOL REFS
+  const MAX_FIREWORKS = 180;
+  const MAX_CONFETTI = 220;
+
+  const fireworksPoolRef = useRef<Particle[]>(
+    Array.from({ length: MAX_FIREWORKS }, () => ({
+      active: false, x: 0, y: 0, vx: 0, vy: 0, color: '#FFD700', radius: 2, alpha: 0, decay: 0.02
+    }))
+  );
+
+  const confettiPoolRef = useRef<ConfettiPiece[]>(
+    Array.from({ length: MAX_CONFETTI }, () => ({
+      active: false, x: 0, y: 0, vx: 0, vy: 0, size: 8, rotation: 0, vRotation: 0,
+      color: '#FFD700', alpha: 0, decay: 0.01, isRect: true
+    }))
+  );
+
+  const NETLIFY_BASE_URL = 'https://azadiwish.netlify.app';
+
+  // Trigger Confetti Burst Animation (Recycles particles from pool)
+  const triggerConfettiBurst = (x?: number, y?: number) => {
+    const posX = x ?? (window.innerWidth / 2);
+    const posY = y ?? (window.innerHeight / 2);
+    const colors = ['#FFD700', '#00FF66', '#FFFFFF', '#32CD32', '#00E5FF', '#FF4081'];
+
+    let activated = 0;
+    for (let i = 0; i < MAX_CONFETTI && activated < 100; i++) {
+      const c = confettiPoolRef.current[i];
+      if (!c.active) {
+        c.active = true;
+        c.x = posX;
+        c.y = posY;
+        c.size = Math.random() * 8 + 6;
+        c.vx = (Math.random() - 0.5) * 16;
+        c.vy = (Math.random() - 0.8) * 14;
+        c.rotation = Math.random() * Math.PI * 2;
+        c.vRotation = (Math.random() - 0.5) * 0.2;
+        c.color = colors[Math.floor(Math.random() * colors.length)];
+        c.alpha = 1;
+        c.decay = Math.random() * 0.012 + 0.008;
+        c.isRect = Math.random() > 0.4;
+        activated++;
+      }
+    }
+  };
+
+  const triggerFireworksBurst = (x?: number, y?: number) => {
+    const posX = x ?? Math.random() * (window.innerWidth || 400);
+    const posY = y ?? Math.random() * ((window.innerHeight || 600) * 0.6);
+    const colors = ['#FFD700', '#00FF66', '#FFFFFF', '#32CD32', '#F0E68C'];
+
+    let activated = 0;
+    for (let i = 0; i < MAX_FIREWORKS && activated < 35; i++) {
+      const p = fireworksPoolRef.current[i];
+      if (!p.active) {
+        p.active = true;
+        p.x = posX;
+        p.y = posY;
+        p.color = colors[Math.floor(Math.random() * colors.length)];
+        p.radius = Math.random() * 3 + 1.5;
+        p.vx = (Math.random() - 0.5) * 9;
+        p.vy = (Math.random() - 0.5) * 9;
+        p.alpha = 1;
+        p.decay = Math.random() * 0.02 + 0.012;
+        activated++;
+      }
+    }
+  };
 
   useEffect(() => {
-    // Trigger Social Bar after exactly 10 seconds
-    loadSocialBarScript(10000);
+    // 1. Initial Page Load URL Parameter Check (?n= or ?name=)
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sender = urlParams.get('n') || urlParams.get('name');
 
-    // Parse URL query parameter ?name=Name or ?n=Name
-    const urlGreeting = parseCurrentLocation();
-    if (urlGreeting && urlGreeting.senderName) {
-      const name = urlGreeting.senderName;
-      setSenderName(name);
-      setPresetIndex(urlGreeting.customMsgIndex || 0);
-      setIsSharedLinkLoaded(true);
-      setShowCreatorForm(false); // Hide form initially so they see sender message first
-      
-      const shareLink = buildShareUrl(encodeGreeting(name, urlGreeting.customMsgIndex || 0));
-      setGeneratedUrl(shareLink);
-
-      setDynamicHeading(`${name} ki taraf se 14 August Mubarak!`);
-      document.title = `${name} ki taraf se - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+      if (sender && sender.trim() !== '') {
+        const cleanSender = sender.trim();
+        setSenderName(cleanSender);
+        setMainHeadingRoman(`${cleanSender} Ki Taraf Se Aapko 14 August Mubarak!`);
+        setMainHeadingUrdu(`${cleanSender} کی طرف سے آپ کو ۱۴ اگست مبارک!`);
+        document.title = `${cleanSender} Ki Taraf Se - 14 August Mubarak 🇵🇰`;
+      } else {
+        setMainHeadingRoman('14 August Jashn-e-Azadi Mubarak!');
+        setMainHeadingUrdu('۱۴ اگست جشنِ آزادی مبارک!');
+        document.title = '14 August Jashn-e-Azadi Mubarak 🇵🇰';
+      }
     }
+
+    // 2. Real-Time Countdown to August 14, 2026 00:00:00 PKT
+    const targetDate = new Date('2026-08-13T19:00:00Z').getTime();
+    const updateCD = () => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance <= 0) {
+        setCdDays('00');
+        setCdHours('00');
+        setCdMinutes('00');
+        setCdSeconds('00');
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setCdDays(String(days).padStart(2, '0'));
+      setCdHours(String(hours).padStart(2, '0'));
+      setCdMinutes(String(minutes).padStart(2, '0'));
+      setCdSeconds(String(seconds).padStart(2, '0'));
+    };
+
+    updateCD();
+    const cdInterval = setInterval(updateCD, 1000);
+
+    // 3. Canvas Renderer Engine with Particle Pool Recycling
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        let animationFrameId: number;
+
+        const resizeCanvas = () => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const render = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Render Fireworks from Pool
+          for (let i = 0; i < MAX_FIREWORKS; i++) {
+            const p = fireworksPoolRef.current[i];
+            if (!p.active) continue;
+
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.05;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+              p.active = false;
+              continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = p.color;
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // Render Confetti from Pool
+          for (let i = 0; i < MAX_CONFETTI; i++) {
+            const c = confettiPoolRef.current[i];
+            if (!c.active) continue;
+
+            c.x += c.vx;
+            c.y += c.vy;
+            c.vy += 0.18;
+            c.vx *= 0.98;
+            c.rotation += c.vRotation;
+            c.alpha -= c.decay;
+
+            if (c.alpha <= 0) {
+              c.active = false;
+              continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, c.alpha);
+            ctx.translate(c.x, c.y);
+            ctx.rotate(c.rotation);
+            ctx.fillStyle = c.color;
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = c.color;
+
+            if (c.isRect) {
+              ctx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
+            } else {
+              ctx.beginPath();
+              ctx.arc(0, 0, c.size / 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.restore();
+          }
+
+          if (Math.random() < 0.04) {
+            triggerFireworksBurst();
+          }
+
+          animationFrameId = requestAnimationFrame(render);
+        };
+
+        render();
+
+        return () => {
+          clearInterval(cdInterval);
+          cancelAnimationFrame(animationFrameId);
+          window.removeEventListener('resize', resizeCanvas);
+        };
+      }
+    }
+
+    return () => clearInterval(cdInterval);
   }, []);
 
-  const handleEmojiAdd = (emoji: string) => {
-    setInputName((prev) => prev + emoji);
+  // Language Toggle
+  const handleToggleLanguage = () => {
+    setIsUrduPrimary((prev) => !prev);
+    triggerFireworksBurst();
   };
 
-  // Open Creator Form for new user
-  const handleOpenCreator = () => {
-    setShowCreatorForm(true);
+  // Open Name Input Modal
+  const handleOpenCustomizer = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsNameModalOpen(true);
+  };
+
+  // Name Form Submission
+  const handleNameSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const val = typedNameInput.trim();
+    if (!val) {
+      alert("Meharbani karke apna naam likhein! / مہربانی کر کے اپنا نام لکھیں!");
+      return;
+    }
+
+    setIsNameModalOpen(false);
+    startRewardTimer();
+  };
+
+  // Start 5-Second Rewarded Vignette Timer
+  const startRewardTimer = () => {
+    setIsRewardModalOpen(true);
+    setTimerSecondsLeft(5);
+    setIsTimerFinished(false);
+
+    const timerInterval = setInterval(() => {
+      setTimerSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerInterval);
+          setIsTimerFinished(true);
+          triggerFireworksBurst();
+          triggerConfettiBurst();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Final Proceed Handler
+  const handleProceed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsRewardModalOpen(false);
+
+    const cleanName = typedNameInput.trim();
+    setSenderName(cleanName);
+    setMainHeadingRoman(`${cleanName} Ki Taraf Se 14 August Mubarak!`);
+    setMainHeadingUrdu(`${cleanName} کی طرف سے ۱۴ اگست مبارک!`);
+    document.title = `${cleanName} Ki Taraf Se - 14 August Mubarak 🇵🇰`;
+
+    let shareUrl = `${NETLIFY_BASE_URL}/?n=${encodeURIComponent(cleanName)}`;
+    if (typeof window !== 'undefined' && !window.location.origin.includes('run.app')) {
+      shareUrl = `${window.location.origin}/?n=${encodeURIComponent(cleanName)}`;
+    }
+    setGeneratedShareUrl(shareUrl);
+
+    if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+      window.history.pushState({}, '', shareUrl);
+    }
+
+    setShowShareSection(true);
+    triggerFireworksBurst();
+    triggerConfettiBurst();
+  };
+
+  // Copy Link Handler
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!generatedShareUrl) return;
+    navigator.clipboard.writeText(generatedShareUrl).then(() => {
+      setCopiedFeedback(true);
+      alert("Link copy ho gaya hai! / لنک کاپی ہو گیا ہے!");
+      setTimeout(() => setCopiedFeedback(false), 2000);
+    }).catch(() => {
+      alert("Link copy ho gaya hai!");
+    });
+  };
+
+  // WhatsApp Share Handler (Triggers Confetti Burst)
+  const handleWhatsAppShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!generatedShareUrl || !senderName) return;
+
+    // Confetti Burst Trigger
+    triggerConfettiBurst(window.innerWidth / 2, window.innerHeight / 2);
+    triggerFireworksBurst(window.innerWidth / 2, window.innerHeight / 3);
+
+    const messageText = `Dekhein ${senderName} ne aapke liye 14 August ka special paigham bheja hai! Yahan click karke dekhein: ${generatedShareUrl}`;
+    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(messageText)}`;
+    const webWhatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
+
     setTimeout(() => {
-      creatorFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
-
-  // Form Submission
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanName = inputName.trim();
-    if (!cleanName) {
-      alert("Apna naam likhein!");
-      return;
-    }
-
-    const selectedIdx = GREETING_PRESETS.findIndex((p) => p.id === selectedPresetId);
-    const validIdx = selectedIdx >= 0 ? selectedIdx : 0;
-
-    setPendingName(cleanName);
-    setPendingPresetIdx(validIdx);
-    setPendingAction('create');
-    setTimerModalTitle('Aapka Paigham Ban Raha Hai...');
-    setIsTimerModalOpen(true);
-  };
-
-  // Triggered when user clicks WhatsApp Share button
-  const handleShareClick = () => {
-    setPendingAction('share');
-    setTimerModalTitle('Share Link Tayyar Ho Raha Hai...');
-    setIsTimerModalOpen(true);
-  };
-
-  // Called when 5-second timer completes in TimerModal and user clicks Proceed
-  const handleTimerModalProceed = () => {
-    setIsTimerModalOpen(false);
-
-    if (pendingAction === 'share') {
-      const shareLink = generatedUrl || (typeof window !== 'undefined' ? window.location.href : '');
-      const message = `Dekhein ${senderName || 'Ek Pakistani'} ne aapke liye 14 August Jashn-e-Azadi ka khas paigham bheja hai! Yahan click karke dekhein: ${shareLink}`;
-      const whatsappWebLink = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-      
       try {
-        window.location.href = `whatsapp://send?text=${encodeURIComponent(message)}`;
+        window.location.href = whatsappUrl;
         setTimeout(() => {
-          window.open(whatsappWebLink, '_blank');
-        }, 500);
+          window.open(webWhatsappUrl, '_blank');
+        }, 600);
       } catch {
-        window.open(whatsappWebLink, '_blank');
+        window.open(webWhatsappUrl, '_blank');
       }
-      setPendingAction(null);
-      return;
-    }
-
-    if (pendingAction === 'create') {
-      const finalName = pendingName;
-      const finalPresetIdx = pendingPresetIdx;
-      
-      setSenderName(finalName);
-      setPresetIndex(finalPresetIdx);
-
-      // Build unique share URL ?name=TypedName
-      const queryStr = encodeGreeting(finalName, finalPresetIdx);
-      const newShareUrl = buildShareUrl(queryStr);
-      setGeneratedUrl(newShareUrl);
-
-      // Update URL in browser bar dynamically without page reload
-      if (typeof window !== 'undefined' && window.history) {
-        window.history.pushState({}, '', newShareUrl);
-      }
-
-      // Dynamic Heading update: "[Typed Name] ki taraf se 14 August Mubarak!"
-      const heading = `${finalName} ki taraf se 14 August Mubarak!`;
-      setDynamicHeading(heading);
-      document.title = `${finalName} - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
-
-      setIsSharedLinkLoaded(true);
-      setShowCreatorForm(false);
-
-      // Celebrate with confetti & fireworks
-      triggerPatrioticConfetti();
-      triggerFireworks();
-      setPendingAction(null);
-    }
+    }, 300);
   };
-
-  const currentPreset = GREETING_PRESETS[presetIndex] || GREETING_PRESETS[0];
-  const filteredPresets = GREETING_PRESETS.filter((p) => p.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#002e13] text-white font-sans selection:bg-white selection:text-[#00401a] relative overflow-x-hidden antialiased flex flex-col justify-between">
+    <div className="min-h-screen bg-[#01411C] text-white font-sans selection:bg-yellow-400 selection:text-black relative overflow-x-hidden flex flex-col justify-between">
       
-      <div>
-        {/* Background Visual Layer */}
-        <BackgroundEffects />
+      {/* Canvas Background for Fireworks & Confetti Engine */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
 
-        {/* Top Header */}
-        <header className="relative z-20 w-full pt-3 pb-2 px-4 flex items-center justify-between max-w-md mx-auto border-b border-white/10">
+      {/* Main Content Container */}
+      <div className="relative z-10 w-full max-w-md mx-auto px-4 py-4 flex flex-col items-center">
+        
+        {/* Header Bar with Language Switcher */}
+        <header className="w-full flex items-center justify-between py-2.5 px-3.5 mb-4 bg-black/50 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl">
           <div className="flex items-center gap-2">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg"
-              alt="14 August Pakistan Logo"
-              className="w-8 h-5 object-cover rounded-sm drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]"
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
+              alt="Pakistan Flag" 
+              className="w-8 h-5 object-cover rounded shadow border border-white/30" 
             />
-            <div>
-              <h1 className="text-xs font-extrabold text-white tracking-wide flex items-center gap-1">
-                <span>Jashn-e-Azadi</span>
-                <span className="text-green-300 font-black">14 August</span>
-              </h1>
-              <p className="text-[9px] text-green-300 font-mono tracking-wider">PAKISTAN ZINDABAD 🇵🇰</p>
-            </div>
+            <span className="text-xs font-black tracking-wider uppercase text-yellow-300">
+              14 August 🇵🇰
+            </span>
           </div>
+
+          <button
+            type="button"
+            onClick={handleToggleLanguage}
+            className="py-1.5 px-3 bg-white/10 hover:bg-white/20 border border-yellow-400/60 rounded-xl text-xs font-black text-yellow-300 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{isUrduPrimary ? "Roman / اردو" : "اردو / Roman"}</span>
+          </button>
         </header>
 
-        {/* Real-Time Countdown Section (August 14) */}
-        <CountdownTimer />
+        {/* Real-Time Countdown Timer */}
+        <div className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center shadow-xl mb-4">
+          <p className="text-xs font-black text-yellow-300 uppercase tracking-widest mb-2.5">
+            14 August Tak Baqi Waqt / ۱۴ اگست تک باقی وقت
+          </p>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
+              <span className="block text-2xl font-black text-white">{cdDays}</span>
+              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Din / دن</span>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
+              <span className="block text-2xl font-black text-white">{cdHours}</span>
+              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Ghante / گھنٹے</span>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
+              <span className="block text-2xl font-black text-white">{cdMinutes}</span>
+              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Minat / منٹ</span>
+            </div>
+            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
+              <span className="block text-2xl font-black text-yellow-300">{cdSeconds}</span>
+              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Second / سیکنڈ</span>
+            </div>
+          </div>
+        </div>
 
-        {/* Middle Banner Ad (320x50) directly below countdown */}
-        <AdsterraBanner type="middle_320x50" />
+        {/* GRAND REALISTIC WAVING PAKISTAN FLAG */}
+        <div 
+          onClick={(e) => { triggerFireworksBurst(e.clientX, e.clientY); triggerConfettiBurst(e.clientX, e.clientY); }}
+          className="my-3 cursor-pointer transition-transform active:scale-95 flex items-start justify-center pl-4" 
+          title="Touch flag for fireworks & confetti!"
+        >
+          {/* Silver Metallic Flagpole */}
+          <div className="relative flex flex-col items-center">
+            <div className="w-4 h-4 bg-gradient-to-tr from-yellow-500 via-yellow-300 to-amber-200 rounded-full border border-yellow-200 shadow-[0_0_12px_rgba(255,215,0,0.9)] -mb-1 z-20" />
+            <div className="w-2.5 h-48 sm:h-56 bg-gradient-to-r from-gray-400 via-slate-100 to-gray-500 rounded-full shadow-2xl border-r border-black/40" />
+          </div>
 
-        {/* Main Content Area */}
-        <main className="relative z-10 max-w-md mx-auto px-4 pb-4 flex flex-col items-center">
+          {/* Real Flag Cloth with Waving Physics */}
+          <div className="flag-waving-realistic relative w-68 h-38 sm:w-76 sm:h-48 overflow-hidden border-2 border-white/50 shadow-2xl bg-[#01411C]">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
+              alt="Realistic Waving Flag of Pakistan" 
+              className="w-full h-full object-cover"
+            />
+            <div className="cloth-shimmer-overlay absolute inset-0 pointer-events-none" />
+          </div>
+        </div>
+        <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center -mt-1 mb-3 drop-shadow">
+          ✨ Parcham Par Touch Karein / پرچم پر ٹچ کریں ✨
+        </p>
+
+        {/* Hero Card */}
+        <div className="w-full bg-white/10 backdrop-blur-xl border-2 border-yellow-400/60 rounded-3xl p-5 sm:p-6 text-center shadow-2xl relative overflow-hidden mb-5">
           
-          {/* Dynamic Festive Greeting Hero */}
-          <GreetingHero
-            senderName={senderName}
-            dynamicHeading={dynamicHeading}
-          />
+          {/* Main Headings */}
+          <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-1 drop-shadow-md tracking-tight">
+            {mainHeadingRoman}
+          </h1>
+          <h2 className="text-xl sm:text-2xl font-bold font-urdu text-yellow-300 leading-normal mb-4">
+            {mainHeadingUrdu}
+          </h2>
 
-          {/* VIEW SENDER MESSAGE SECTION (If link was shared) */}
-          {isSharedLinkLoaded && (
-            <div className="w-full animate-fade-in">
-              {/* Personalized Wish Message Card */}
-              <PersonalizedMessageCard
-                senderName={senderName}
-                preset={currentPreset}
-                onCelebrate={() => {
-                  triggerPatrioticConfetti();
-                  triggerFireworks();
-                }}
-              />
+          {/* Dual Message Display */}
+          <div className="bg-black/50 p-4 sm:p-5 rounded-2xl border border-white/20 mb-4 text-left space-y-3.5 shadow-inner">
+            <div>
+              <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1">
+                Roman Urdu Paigham:
+              </span>
+              <p className="text-sm sm:text-base text-emerald-100 font-extrabold leading-relaxed">
+                "Dil se dua hai ke humara pyara Pakistan hamesha quaim wa daim rahe, taraqqi kare aur hum sab azaad wa khushaal rahein. Aapko aur aapki pyari family ko 14 August Jashn-e-Azadi ki dheron mubarakbaad!"
+              </p>
+            </div>
 
-              {/* Urdu Calligraphy Card */}
-              <UrduCalligraphyCard />
+            <div className="border-t border-white/15 pt-3 text-right">
+              <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1 font-urdu">
+                پیغام اردو:
+              </span>
+              <p className="text-base sm:text-lg text-yellow-100 font-bold font-urdu leading-loose">
+                "دل سے دعا ہے کہ ہمارا پیارا پاکستان ہمیشہ قائم و دائم رہے، ترقی کرے اور ہم سب آزاد و خوشحال رہیں۔ آپ کو اور آپ کی پیاری فیملی کو ۱۴ اگست جشنِ آزادی کی ڈھیروں مبارکباد!"
+              </p>
+            </div>
+          </div>
 
-              {/* Sharing & Copy Section */}
-              <ShareButton
-                senderName={senderName}
-                shareUrl={generatedUrl || (typeof window !== 'undefined' ? window.location.href : '')}
-                onShareClick={handleShareClick}
-              />
-              
-              {/* Mandatory Prominent Button: "Aap Bhi Apna Paigham Banayein" */}
-              <div className="my-5 p-4 bg-gradient-to-r from-amber-500/20 via-green-500/20 to-emerald-500/20 rounded-2xl border-2 border-green-400/50 backdrop-blur-xl text-center shadow-2xl">
-                <p className="text-xs font-black text-yellow-300 uppercase tracking-wider mb-2">
-                  ✨ Aap Bhi Apne Naam Ka Link Banayein ✨
-                </p>
+          {/* Clear Ad Guidance Banner */}
+          <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-2xl p-3.5 mb-5 text-center shadow-inner">
+            <p className="text-xs font-black text-yellow-300 flex items-center justify-center gap-1.5">
+              <Info className="w-4 h-4 text-yellow-400" />
+              <span>Ishtihar (Ad) Hidayat / اہم ہدایت:</span>
+            </p>
+            <p className="text-xs text-emerald-100 font-extrabold mt-1 leading-snug">
+              Agar koi ishtihar (ad) khule, toh pareshan na ho! Simply back button dabayein aur apna paigham wa link haasil karein.
+            </p>
+            <p className="text-xs text-yellow-200 font-urdu font-bold leading-normal mt-0.5">
+              اگر کوئی اشتہار کھلے تو گھبرائیں نہیں! بیک بٹن دبائیں اور اپنا پیغام حاصل کریں۔
+            </p>
+          </div>
+
+          {/* Static Primary CTA Button */}
+          <button
+            type="button"
+            onClick={handleOpenCustomizer}
+            className="w-full py-4.5 px-6 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-black font-black text-base sm:text-lg shadow-2xl animate-glow transition-all active:scale-95 flex items-center justify-center gap-2 border-2 border-white cursor-pointer hover:brightness-110"
+          >
+            <span>{isUrduPrimary ? "اپنا پیغام بنائیں ➡️" : "Apna Paigham Banayein ➡️"}</span>
+            <ArrowRight className="w-5 h-5 text-black" />
+          </button>
+
+          {/* Share Section */}
+          {showShareSection && (
+            <div className="mt-6 pt-6 border-t border-white/20 text-left animate-fade-in">
+              <label className="block text-xs font-black text-yellow-300 uppercase tracking-widest mb-1">
+                Aap Ka Khas Link Tayyar Hai:
+              </label>
+              <p className="text-xs text-emerald-200 font-bold mb-2.5">
+                آپ کا خاص لنک تیار ہے! نیچے کاپی یا واٹس ایپ پر شیئر کریں۔
+              </p>
+
+              {/* Copyable Link Field */}
+              <div className="flex items-center gap-2 mb-4">
+                <input
+                  type="text"
+                  readOnly
+                  value={generatedShareUrl}
+                  className="w-full px-3.5 py-3 bg-black/60 border border-white/30 rounded-xl text-xs sm:text-sm text-emerald-200 outline-none font-mono font-bold"
+                />
                 <button
-                  id="create-own-link-btn"
                   type="button"
-                  onClick={handleOpenCreator}
-                  className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-extrabold text-base shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 border border-white/40 cursor-pointer animate-bounce"
+                  onClick={handleCopyLink}
+                  className="py-3 px-4.5 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs sm:text-sm rounded-xl shadow cursor-pointer shrink-0 transition-all active:scale-95 flex items-center gap-1.5"
                 >
-                  <PlusCircle className="w-5 h-5 text-yellow-300" />
-                  <span>Apna Paigham Banayein ➡️</span>
+                  {copiedFeedback ? <Check className="w-4 h-4 text-black" /> : <Copy className="w-4 h-4 text-black" />}
+                  <span>Copy</span>
                 </button>
               </div>
+
+              {/* WhatsApp Share Button */}
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="w-full py-4.5 px-6 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-base sm:text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2.5 border border-white/30 cursor-pointer transition-all active:scale-95"
+              >
+                <span>WhatsApp Par Share Karein</span>
+              </button>
             </div>
           )}
 
-          {/* UNIFIED CREATOR FORM */}
-          {showCreatorForm && (
-            <div ref={creatorFormRef} className="w-full my-4 p-5 bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl animate-fade-in">
-              <div className="flex items-center gap-2 mb-3">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" alt="Pakistan Flag" className="w-6 h-4 object-cover rounded-xs" />
-                <h2 className="text-base font-extrabold text-white">Apna Naam Aur Paigham Banayein</h2>
+        </div>
+
+      </div>
+
+      {/* Footer */}
+      <footer className="w-full py-6 px-4 text-center bg-black/50 border-t border-white/10 relative z-10 mt-auto">
+        <div className="max-w-md mx-auto space-y-1">
+          <p className="text-xs sm:text-sm font-black text-yellow-300">
+            🇵🇰 14 August Jashn-e-Azadi Mubarak 🇵🇰
+          </p>
+          <p className="text-xs text-white/90 font-bold">
+            Pyare Pakistan Ke Liye Muhabbat Se Banaya Gaya ❤️
+          </p>
+          <p className="text-sm sm:text-base text-emerald-300 font-bold font-urdu tracking-wide mt-1">
+            پاکستان ہمیشہ زندہ باد
+          </p>
+        </div>
+      </footer>
+
+      {/* MODAL 1: NAME CUSTOMIZATION INPUT */}
+      {isNameModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-sm bg-[#01411C] border-2 border-yellow-400 rounded-3xl p-6 text-white shadow-2xl relative">
+            
+            <button 
+              type="button"
+              onClick={() => setIsNameModalOpen(false)}
+              className="absolute top-4 right-4 text-white/70 hover:text-white text-lg font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 mx-auto mb-2 bg-yellow-400/20 rounded-full flex items-center justify-center text-yellow-300 text-xl border border-yellow-400/40">
+                <Sparkles className="w-6 h-6 text-yellow-300" />
+              </div>
+              <h2 className="text-lg font-black text-white">Apna Naam Likhein / اپنا نام لکھیں</h2>
+              <p className="text-xs text-emerald-200 font-bold mt-1">Yahan apna naam darj karke apna khas link banayein.</p>
+            </div>
+
+            <form onSubmit={handleNameSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black text-yellow-300 uppercase mb-1 ml-1">
+                  Aap Ka Naam / آپ کا نام
+                </label>
+                <input
+                  type="text"
+                  value={typedNameInput}
+                  onChange={(e) => setTypedNameInput(e.target.value)}
+                  placeholder="Yahan apna naam likhein..."
+                  className="w-full px-4 py-3 bg-black/50 border border-white/30 focus:border-yellow-400 rounded-xl text-white placeholder:text-white/40 outline-none text-sm font-bold transition-all"
+                />
               </div>
 
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                {/* Input Name */}
-                <div>
-                  <label htmlFor="user-name-input" className="block text-xs font-bold text-green-300 uppercase tracking-widest mb-1 ml-0.5">
-                    Aap Ka Naam
-                  </label>
-                  <input
-                    id="user-name-input"
-                    type="text"
-                    value={inputName}
-                    onChange={(e) => setInputName(e.target.value)}
-                    placeholder="Yahan apna naam likhein..."
-                    className="w-full px-4 py-3 bg-black/40 border border-white/25 focus:border-green-400 rounded-xl text-white placeholder:text-white/50 outline-none transition-all font-semibold text-sm backdrop-blur-md"
-                  />
+              <button
+                type="submit"
+                className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-black text-sm sm:text-base shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Paigham Tayyar Karein ➡️</span>
+                <ArrowRight className="w-4 h-4 text-black" />
+              </button>
+            </form>
 
-                  {/* Fast Emoji Buttons */}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="text-[11px] text-white/70 font-medium">Fast Emoji:</span>
-                    {['🇵🇰', '💚', '✨', '⭐', '🔥'].map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => handleEmojiAdd(emoji)}
-                        className="px-2 py-0.5 rounded-lg bg-white/10 border border-white/20 text-xs hover:bg-white/20 transition-colors cursor-pointer"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          </div>
+        </div>
+      )}
 
-                {/* Preset Category Tabs */}
-                <div>
-                  <label className="block text-xs font-bold text-green-300 uppercase tracking-widest mb-1.5 ml-0.5">
-                    Paigham Select Karein
-                  </label>
-                  
-                  <div className="grid grid-cols-3 gap-1 p-1 bg-black/30 rounded-xl border border-white/15 mb-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveCategory('everyone');
-                        const first = GREETING_PRESETS.find((p) => p.category === 'everyone');
-                        if (first) setSelectedPresetId(first.id);
-                      }}
-                      className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                        activeCategory === 'everyone'
-                          ? 'bg-white text-[#00401a] shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      <Users className="w-3.5 h-3.5 shrink-0" />
-                      <span>Sab Ke Liye</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveCategory('friends');
-                        const first = GREETING_PRESETS.find((p) => p.category === 'friends');
-                        if (first) setSelectedPresetId(first.id);
-                      }}
-                      className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                        activeCategory === 'friends'
-                          ? 'bg-white text-[#00401a] shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      <User className="w-3.5 h-3.5 shrink-0" />
-                      <span>Doston Ke Liye</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveCategory('family');
-                        const first = GREETING_PRESETS.find((p) => p.category === 'family');
-                        if (first) setSelectedPresetId(first.id);
-                      }}
-                      className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                        activeCategory === 'family'
-                          ? 'bg-white text-[#00401a] shadow-md'
-                          : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      <Heart className="w-3.5 h-3.5 shrink-0 text-rose-500" />
-                      <span>Family Ke Liye</span>
-                    </button>
-                  </div>
-
-                  {/* Presets List */}
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {filteredPresets.map((preset) => (
-                      <div
-                        key={preset.id}
-                        onClick={() => setSelectedPresetId(preset.id)}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                          selectedPresetId === preset.id
-                            ? 'bg-white/20 border-green-400 text-white shadow-md backdrop-blur-xl'
-                            : 'bg-black/20 border-white/10 text-white/80 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs font-bold text-green-300">{preset.title}</p>
-                          {selectedPresetId === preset.id && <CheckCircle className="w-4 h-4 text-green-400" />}
-                        </div>
-                        <p className="text-xs text-white/90 line-clamp-2 mt-1 leading-relaxed">
-                          "{preset.romanUrdu}"
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Primary Action Button */}
-                <button
-                  id="main-generate-btn"
-                  type="submit"
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-black text-base shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 border border-white/40 cursor-pointer"
-                >
-                  <Sparkles className="w-5 h-5 text-white" />
-                  <span>Apna Paigham Banayein</span>
-                  <ArrowRight className="w-5 h-5 text-white" />
-                </button>
-              </form>
+      {/* MODAL 2: 5-SECOND REWARDED VIGNETTE TIMER MODAL */}
+      {isRewardModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="w-full max-w-sm bg-[#002e13] border-2 border-emerald-400 rounded-3xl p-6 text-white text-center shadow-2xl relative overflow-hidden">
+            
+            <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center text-yellow-300 text-2xl border border-emerald-400/40 animate-pulse">
+              <Clock className="w-8 h-8 text-yellow-300" />
             </div>
-          )}
 
-        </main>
-      </div>
+            <h3 className="text-base font-black text-white mb-2">
+              {isTimerFinished ? "Aapka Paigham Tayyar Hai! ✅ / آپ کا پیغام تیار ہے" : `Aapka Paigham Ban Raha Hai... (${timerSecondsLeft}s)`}
+            </h3>
 
-      <div>
-        {/* Bottom Banner Ad (468x60) directly above footer */}
-        <AdsterraBanner type="bottom_468x60" />
+            <p className="text-xs text-emerald-200 font-bold mb-4">
+              Baraye meherbani 5 second intizar farmayein... / برائے مہربانی ۵ سیکنڈ انتظار فرمائیں
+            </p>
 
-        {/* Footer at the very bottom */}
-        <Footer />
-      </div>
+            <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 mb-5 text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+              <span>Agar ad khule toh back button dabayein, reward tayyar hai!</span>
+            </div>
 
-      {/* 5-Second Rewarded Ad Modal */}
-      <TimerModal
-        isOpen={isTimerModalOpen}
-        userName={pendingName || senderName}
-        title={timerModalTitle}
-        onClose={() => setIsTimerModalOpen(false)}
-        onProceed={handleTimerModalProceed}
-      />
+            <button
+              type="button"
+              disabled={!isTimerFinished}
+              onClick={handleProceed}
+              className={`w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base shadow-xl transition-all flex items-center justify-center gap-2 ${
+                isTimerFinished
+                  ? "bg-gradient-to-r from-yellow-400 to-amber-400 text-black border-2 border-white cursor-pointer hover:scale-102 active:scale-95 animate-pulse"
+                  : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed opacity-60"
+              }`}
+            >
+              <span>{isTimerFinished ? "Aage Barhein ➡️ / آگے بڑھیں" : "Baraye Meherbani Intizar Karein..."}</span>
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

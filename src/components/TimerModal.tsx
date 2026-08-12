@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AdsterraBanner } from './AdsterraBanner';
-import { loadSocialBarScript } from '../utils/adManager';
 import { Clock, ArrowRight, X, CheckCircle } from 'lucide-react';
 
 interface TimerModalProps {
@@ -23,7 +21,6 @@ export const TimerModal: React.FC<TimerModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      loadSocialBarScript(0); // Load social bar immediately when modal opens
       setTimeLeft(5); // 5-second timer
       setIsReady(false);
 
@@ -46,7 +43,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-hidden animate-fade-in">
-      <div className="relative w-full max-w-sm bg-[#002810] border-2 border-green-500/50 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-white my-auto">
+      <div className="relative w-full max-w-sm bg-[#002810] border-2 border-yellow-400 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-white my-auto">
         
         {/* Header with Close Button */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-black/50">
@@ -68,10 +65,10 @@ export const TimerModal: React.FC<TimerModalProps> = ({
 
         {/* User Greeting Teaser */}
         <div className="px-5 pt-3.5 text-center">
-          <p className="text-xs text-green-300 font-semibold">
+          <p className="text-xs text-emerald-200 font-semibold">
             {userName ? (
               <>
-                <span className="font-extrabold text-white">{userName}</span> ka 14 August paigham tayyar ho raha hai...
+                <span className="font-extrabold text-yellow-300">{userName}</span> ka 14 August paigham tayyar ho raha hai...
               </>
             ) : (
               'Baraye meherbani 5 second intizar farmayein...'
@@ -79,16 +76,11 @@ export const TimerModal: React.FC<TimerModalProps> = ({
           </p>
         </div>
 
-        {/* Modal Ad Banner Container */}
-        <div className="p-2 flex flex-col items-center justify-center">
-          <AdsterraBanner type="modal_320x50" />
-        </div>
-
         {/* Ready Confirmation Message */}
         {isReady && (
-          <div className="px-4 py-2 text-center bg-green-500/20 border-y border-green-500/30 animate-pulse">
-            <p className="text-xs font-bold text-green-300 flex items-center justify-center gap-1.5">
-              <CheckCircle className="w-4 h-4 text-green-400" />
+          <div className="px-4 py-2 mt-4 text-center bg-emerald-500/20 border-y border-emerald-500/30 animate-pulse">
+            <p className="text-xs font-bold text-emerald-300 flex items-center justify-center gap-1.5">
+              <CheckCircle className="w-4 h-4 text-yellow-400" />
               <span>Aapka Paigham Tayyar Hai!</span>
             </p>
           </div>
@@ -102,14 +94,14 @@ export const TimerModal: React.FC<TimerModalProps> = ({
             onClick={onProceed}
             className={`w-full py-3.5 px-6 rounded-2xl font-black text-base flex items-center justify-center gap-2 transition-all shadow-xl ${
               isReady
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white border-2 border-white/40 cursor-pointer animate-pulse scale-102'
+                ? 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-black border-2 border-white cursor-pointer animate-pulse scale-102'
                 : 'bg-white/10 text-white/40 border border-white/10 cursor-not-allowed opacity-60'
             }`}
           >
             {isReady ? (
               <>
                 <span>Aage Barhein ➡️</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5 text-black" />
               </>
             ) : (
               <span>Baraye Meherbani {timeLeft}s Intizar Karein...</span>
