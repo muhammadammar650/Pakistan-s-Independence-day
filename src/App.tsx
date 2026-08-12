@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, ArrowRight, Copy, Check, Globe, Info, Clock } from 'lucide-react';
+import { Sparkles, ArrowRight, Copy, Check, Info, Clock, X } from 'lucide-react';
+import { VignetteManager } from './utils/vignetteManager';
+import { injectMonetagScripts } from './utils/adInjector';
 
 interface Particle {
   active: boolean;
@@ -33,7 +35,6 @@ export default function App() {
   const [mainHeadingRoman, setMainHeadingRoman] = useState<string>('14 August Jashn-e-Azadi Mubarak!');
   const [mainHeadingUrdu, setMainHeadingUrdu] = useState<string>('۱۴ اگست جشنِ آزادی مبارک!');
   const [typedNameInput, setTypedNameInput] = useState<string>('');
-  const [isUrduPrimary, setIsUrduPrimary] = useState<boolean>(false);
   
   // Modals state
   const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
@@ -71,9 +72,15 @@ export default function App() {
     }))
   );
 
-  const NETLIFY_BASE_URL = 'https://azadiwish.netlify.app';
+  // STRICT DOMAIN FOR LINK GENERATION
+  const MANDATORY_BASE_DOMAIN = 'https://azadiwish.netlify.app';
 
-  // Trigger Confetti Burst Animation (Recycles particles from pool)
+  // Global click wrapper to track 3-click popunder rule
+  const handleGlobalClick = (e: React.MouseEvent) => {
+    VignetteManager.registerClick();
+  };
+
+  // Trigger Confetti Burst Animation
   const triggerConfettiBurst = (x?: number, y?: number) => {
     const posX = x ?? (window.innerWidth / 2);
     const posY = y ?? (window.innerHeight / 2);
@@ -148,7 +155,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    // 1. Initial Page Load URL Parameter Check (?n= or ?name=)
+    // Inject Monetag ad scripts via deferred loader
+    injectMonetagScripts();
+
+    // Initial Page Load URL Parameter Check (?n= or ?name=)
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const sender = urlParams.get('n') || urlParams.get('name');
@@ -163,32 +173,9 @@ export default function App() {
         setMainHeadingRoman('14 August Jashn-e-Azadi Mubarak!');
         setMainHeadingUrdu('۱۴ اگست جشنِ آزادی مبارک!');
       }
-
-      // Ad-blocker detector check
-      setTimeout(() => {
-        const bait = document.createElement('div');
-        bait.className = 'adsbygoogle ad-zone ad-banner monetag-ad';
-        bait.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;';
-        document.body.appendChild(bait);
-
-        setTimeout(() => {
-          let blocked = bait.offsetHeight === 0 || bait.clientHeight === 0 || window.getComputedStyle(bait).display === 'none';
-          bait.remove();
-
-          if (typeof (window as any).show_11552282 === 'undefined' && typeof (window as any).showVignette === 'undefined') {
-            const monetagScript = document.querySelector('script[data-zone="11552420"], script[data-zone="268834"]');
-            if (!monetagScript) blocked = true;
-          }
-
-          if (blocked) {
-            const banner = document.getElementById('adBlockerBanner');
-            if (banner) banner.classList.remove('hidden');
-          }
-        }, 300);
-      }, 2000);
     }
 
-    // 2. Real-Time Countdown to August 14, 2026 00:00:00 PKT
+    // Countdown to August 14, 2026 00:00:00 PKT
     const targetDate = new Date('2026-08-13T19:00:00Z').getTime();
     const updateCD = () => {
       const now = new Date().getTime();
@@ -216,7 +203,7 @@ export default function App() {
     updateCD();
     const cdInterval = setInterval(updateCD, 1000);
 
-    // 3. Canvas Renderer Engine with Particle Pool Recycling
+    // Canvas Renderer Engine with Particle Pool Recycling
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -314,40 +301,19 @@ export default function App() {
     return () => clearInterval(cdInterval);
   }, []);
 
-  // Language Toggle
-  const handleToggleLanguage = () => {
-    setIsUrduPrimary((prev) => !prev);
-    triggerFireworksBurst();
-  };
-
-  // Helper function to explicitly trigger Monetag Vignette Banner Ad
-  const triggerVignetteBannerAd = () => {
-    if (typeof window !== 'undefined') {
-      try {
-        if (typeof (window as any).show_11552282 === 'function') {
-          (window as any).show_11552282();
-        } else if (typeof (window as any).showVignette === 'function') {
-          (window as any).showVignette();
-        } else {
-          const ev = new CustomEvent('monetag_vignette_trigger', { detail: { zone: 11552282 } });
-          window.dispatchEvent(ev);
-        }
-      } catch (err) {
-        console.log('Vignette trigger check:', err);
-      }
-    }
-  };
-
-  // Open Name Input Modal
+  // Single-tap action: Open Name Input Modal
   const handleOpenCustomizer = (e: React.MouseEvent) => {
     e.stopPropagation();
+    handleGlobalClick(e);
     setIsNameModalOpen(true);
-    setTimeout(triggerVignetteBannerAd, 10);
+    VignetteManager.triggerVignette('open_customizer');
   };
 
   // Name Form Submission
   const handleNameSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    VignetteManager.registerClick();
+
     const val = typedNameInput.trim();
     if (!val) {
       alert("Meharbani karke apna naam likhein! / مہربانی کر کے اپنا نام لکھیں!");
@@ -358,19 +324,24 @@ export default function App() {
     startRewardTimer();
   };
 
-  // Explicitly link Vignette Banner trigger to the Reward Modal open event
-  useEffect(() => {
-    if (isRewardModalOpen) {
-      triggerVignetteBannerAd();
-    }
-  }, [isRewardModalOpen]);
-
   // Start 5-Second Rewarded Vignette Timer
   const startRewardTimer = () => {
     setIsRewardModalOpen(true);
-    triggerVignetteBannerAd();
     setTimerSecondsLeft(5);
     setIsTimerFinished(false);
+
+    // INJECT and EXECUTE Monetag Vignette script exactly when modal opens
+    try {
+      (function(s: any) {
+        s.dataset.zone = '11552282';
+        s.src = 'https://n6wxm.com/vignette.min.js';
+      })([document.documentElement, document.body].filter(Boolean).pop()!.appendChild(document.createElement('script')));
+    } catch (err) {
+      console.warn('Vignette script injection notice:', err);
+    }
+
+    // Trigger Vignette Banner Ad via manager
+    VignetteManager.triggerVignette('reward_timer');
 
     const timerInterval = setInterval(() => {
       setTimerSecondsLeft((prev) => {
@@ -386,9 +357,10 @@ export default function App() {
     }, 1000);
   };
 
-  // Final Proceed Handler
+  // Final "Aage Barhein ➡️ / آگے بڑھیں" Handler
   const handleProceed = (e: React.MouseEvent) => {
     e.stopPropagation();
+    handleGlobalClick(e);
     setIsRewardModalOpen(false);
 
     const cleanName = typedNameInput.trim();
@@ -397,14 +369,12 @@ export default function App() {
     setMainHeadingUrdu(`${cleanName} کی طرف سے ۱۴ اگست مبارک!`);
     updateDynamicSocialMeta(cleanName);
 
-    let shareUrl = `${NETLIFY_BASE_URL}/?n=${encodeURIComponent(cleanName)}`;
-    if (typeof window !== 'undefined' && !window.location.origin.includes('run.app')) {
-      shareUrl = `${window.location.origin}/?n=${encodeURIComponent(cleanName)}`;
-    }
-    setGeneratedShareUrl(shareUrl);
+    // ALWAYS GENERATE LINK USING MANDATORY DOMAIN: https://azadiwish.netlify.app
+    const netlifyShareUrl = `${MANDATORY_BASE_DOMAIN}/?n=${encodeURIComponent(cleanName)}`;
+    setGeneratedShareUrl(netlifyShareUrl);
 
     if (typeof window !== 'undefined' && window.history && window.history.pushState) {
-      window.history.pushState({}, '', shareUrl);
+      window.history.pushState({}, '', `/?n=${encodeURIComponent(cleanName)}`);
     }
 
     setShowShareSection(true);
@@ -415,7 +385,9 @@ export default function App() {
   // Copy Link Handler
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
+    handleGlobalClick(e);
     if (!generatedShareUrl) return;
+
     navigator.clipboard.writeText(generatedShareUrl).then(() => {
       setCopiedFeedback(true);
       alert("Link copy ho gaya hai! / لنک کاپی ہو گیا ہے!");
@@ -425,36 +397,31 @@ export default function App() {
     });
   };
 
-  // WhatsApp Share Handler (Triggers Confetti Burst & Vignette Banner)
+  // WhatsApp Share Handler
   const handleWhatsAppShare = (e: React.MouseEvent) => {
     e.stopPropagation();
+    handleGlobalClick(e);
     if (!generatedShareUrl || !senderName) return;
 
-    // Explicitly trigger Vignette Banner Ad on WhatsApp Share (Naka Popunder!)
-    triggerVignetteBannerAd();
+    // Trigger Vignette Banner Ad via Manager
+    VignetteManager.triggerVignette('whatsapp_share');
 
-    // Confetti Burst Trigger
+    // Confetti & Fireworks celebration
     triggerConfettiBurst(window.innerWidth / 2, window.innerHeight / 2);
     triggerFireworksBurst(window.innerWidth / 2, window.innerHeight / 3);
 
     const messageText = `Dekhein ${senderName} ne aapke liye 14 August ka special paigham bheja hai! Yahan click karke dekhein: ${generatedShareUrl}`;
-    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(messageText)}`;
     const webWhatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
 
-    setTimeout(() => {
-      try {
-        window.location.href = whatsappUrl;
-        setTimeout(() => {
-          window.open(webWhatsappUrl, '_blank');
-        }, 600);
-      } catch {
-        window.open(webWhatsappUrl, '_blank');
-      }
-    }, 300);
+    // Direct open without redirecting current site away
+    window.open(webWhatsappUrl, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-[#01411C] text-white font-sans selection:bg-yellow-400 selection:text-black relative overflow-x-hidden flex flex-col justify-between">
+    <div 
+      onClick={handleGlobalClick}
+      className="min-h-screen bg-[#01411C] text-white font-roman selection:bg-yellow-400 selection:text-black relative overflow-x-hidden flex flex-col justify-between antialiased"
+    >
       
       {/* Canvas Background for Fireworks & Confetti Engine */}
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
@@ -462,27 +429,22 @@ export default function App() {
       {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-md mx-auto px-4 py-4 flex flex-col items-center">
         
-        {/* Header Bar with Language Switcher */}
-        <header className="w-full flex items-center justify-between py-2.5 px-3.5 mb-4 bg-black/50 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl">
-          <div className="flex items-center gap-2">
+        {/* Header Bar */}
+        <header className="w-full flex items-center justify-between py-2.5 px-4 mb-4 bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl">
+          <div className="flex items-center gap-2.5">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
               alt="Pakistan Flag" 
               className="w-8 h-5 object-cover rounded shadow border border-white/30" 
             />
             <span className="text-xs font-black tracking-wider uppercase text-yellow-300">
-              14 August 🇵🇰
+              14 August Jashn-e-Azadi 🇵🇰
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleToggleLanguage}
-            className="py-1.5 px-3 bg-white/10 hover:bg-white/20 border border-yellow-400/60 rounded-xl text-xs font-black text-yellow-300 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-md"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>{isUrduPrimary ? "Roman / اردو" : "اردو / Roman"}</span>
-          </button>
+          <div className="py-1 px-3 bg-emerald-950/80 border border-yellow-400/50 rounded-xl text-[11px] font-extrabold text-yellow-300 flex items-center gap-1 shadow-sm">
+            <span>Pakistan Zindabad!</span>
+          </div>
         </header>
 
         {/* Real-Time Countdown Timer */}
@@ -510,29 +472,26 @@ export default function App() {
           </div>
         </div>
 
-        {/* COMPACT REALISTIC WAVING PAKISTAN FLAG */}
+        {/* STRAIGHT UPRIGHT PROMINENT PAKISTAN FLAG */}
         <div 
-          onClick={(e) => { triggerFireworksBurst(e.clientX, e.clientY); triggerConfettiBurst(e.clientX, e.clientY); }}
-          className="my-2 cursor-pointer transition-transform active:scale-95 flex items-start justify-center pl-2" 
+          onClick={(e) => { 
+            e.stopPropagation();
+            handleGlobalClick(e);
+            triggerFireworksBurst(e.clientX, e.clientY); 
+            triggerConfettiBurst(e.clientX, e.clientY); 
+          }}
+          className="my-5 cursor-pointer flex items-center justify-center w-full" 
           title="Touch flag for fireworks & confetti!"
         >
-          {/* Silver Metallic Flagpole */}
-          <div className="relative flex flex-col items-center">
-            <div className="w-3.5 h-3.5 bg-gradient-to-tr from-yellow-500 via-yellow-300 to-amber-200 rounded-full border border-yellow-200 shadow-[0_0_10px_rgba(255,215,0,0.9)] -mb-1 z-20" />
-            <div className="w-2 h-36 sm:h-40 bg-gradient-to-r from-gray-400 via-slate-100 to-gray-500 rounded-full shadow-xl border-r border-black/40" />
-          </div>
-
-          {/* Compact Flag Cloth */}
-          <div className="flag-waving-realistic relative w-48 h-28 sm:w-56 sm:h-32 overflow-hidden border-2 border-white/50 shadow-2xl bg-[#01411C]">
+          <div className="w-64 sm:w-72 aspect-[16/9] relative overflow-hidden border-2 border-white/80 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(255,215,0,0.4)] bg-[#01411C]">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" 
-              alt="Realistic Waving Flag of Pakistan" 
+              alt="Flag of Pakistan - 14 August Independence Day" 
               className="w-full h-full object-cover"
             />
-            <div className="cloth-shimmer-overlay absolute inset-0 pointer-events-none" />
           </div>
         </div>
-        <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-0.5 mb-3 drop-shadow">
+        <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-2 mb-3 drop-shadow">
           ✨ Parcham Par Touch Karein / پرچم پر ٹچ کریں ✨
         </p>
 
@@ -540,15 +499,15 @@ export default function App() {
         <div className="w-full bg-white/10 backdrop-blur-xl border-2 border-yellow-400/60 rounded-3xl p-5 sm:p-6 text-center shadow-2xl relative overflow-hidden mb-5">
           
           {/* Main Headings */}
-          <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-1 drop-shadow-md tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-white leading-snug mb-1 drop-shadow-md tracking-tight">
             {mainHeadingRoman}
           </h1>
-          <h2 className="text-xl sm:text-2xl font-bold font-urdu text-yellow-300 leading-normal mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold font-urdu text-yellow-300 mb-4 drop-shadow">
             {mainHeadingUrdu}
           </h2>
 
           {/* Dual Message Display */}
-          <div className="bg-black/50 p-4 sm:p-5 rounded-2xl border border-white/20 mb-4 text-left space-y-3.5 shadow-inner">
+          <div className="bg-black/55 p-4 sm:p-5 rounded-2xl border border-white/20 mb-4 text-left space-y-4 shadow-inner">
             <div>
               <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1">
                 Roman Urdu Paigham:
@@ -558,47 +517,47 @@ export default function App() {
               </p>
             </div>
 
-            <div className="border-t border-white/15 pt-3 text-right">
+            <div className="border-t border-white/15 pt-3.5 text-right">
               <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1 font-urdu">
                 پیغام اردو:
               </span>
-              <p className="text-base sm:text-lg text-yellow-100 font-bold font-urdu leading-loose">
+              <p className="text-base sm:text-lg text-yellow-100 font-bold font-urdu">
                 "دل سے دعا ہے کہ ہمارا پیارا پاکستان ہمیشہ قائم و دائم رہے، ترقی کرے اور ہم سب آزاد و خوشحال رہیں۔ آپ کو اور آپ کی پیاری فیملی کو ۱۴ اگست جشنِ آزادی کی ڈھیروں مبارکباد!"
               </p>
             </div>
           </div>
 
-          {/* Clear Ad Guidance Banner */}
+          {/* Ad Guidance Banner */}
           <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-2xl p-3.5 mb-5 text-center shadow-inner">
             <p className="text-xs font-black text-yellow-300 flex items-center justify-center gap-1.5">
               <Info className="w-4 h-4 text-yellow-400" />
               <span>Ishtihar (Ad) Hidayat / اہم ہدایت:</span>
             </p>
             <p className="text-xs text-emerald-100 font-extrabold mt-1 leading-snug">
-              Agar koi ishtihar (ad) khule, toh pareshan na ho! Simply back button dabayein aur apna paigham wa link haasil karein.
+              Agar koi ishtihar khule, toh pareshan na ho! Simply back button dabayein aur apna paigham wa link haasil karein.
             </p>
-            <p className="text-xs text-yellow-200 font-urdu font-bold leading-normal mt-0.5">
+            <p className="text-xs text-yellow-200 font-urdu font-bold mt-1">
               اگر کوئی اشتہار کھلے تو گھبرائیں نہیں! بیک بٹن دبائیں اور اپنا پیغام حاصل کریں۔
             </p>
           </div>
 
-          {/* Static Primary CTA Button */}
+          {/* Primary CTA Button */}
           <button
             type="button"
             onClick={handleOpenCustomizer}
             className="w-full py-4.5 px-6 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-black font-black text-base sm:text-lg shadow-2xl animate-glow transition-all active:scale-95 flex items-center justify-center gap-2 border-2 border-white cursor-pointer hover:brightness-110"
           >
-            <span>{isUrduPrimary ? "اپنا پیغام بنائیں ➡️" : "Apna Paigham Banayein ➡️"}</span>
+            <span>Apna Paigham Banayein ➡️</span>
             <ArrowRight className="w-5 h-5 text-black" />
           </button>
 
-          {/* Share Section */}
+          {/* Share Section (Revealed Post-Customization) */}
           {showShareSection && (
             <div className="mt-6 pt-6 border-t border-white/20 text-left animate-fade-in">
               <label className="block text-xs font-black text-yellow-300 uppercase tracking-widest mb-1">
                 Aap Ka Khas Link Tayyar Hai:
               </label>
-              <p className="text-xs text-emerald-200 font-bold mb-2.5">
+              <p className="text-xs text-emerald-200 font-bold font-urdu mb-2.5">
                 آپ کا خاص لنک تیار ہے! نیچے کاپی یا واٹس ایپ پر شیئر کریں۔
               </p>
 
@@ -608,7 +567,7 @@ export default function App() {
                   type="text"
                   readOnly
                   value={generatedShareUrl}
-                  className="w-full px-3.5 py-3 bg-black/60 border border-white/30 rounded-xl text-xs sm:text-sm text-emerald-200 outline-none font-mono font-bold"
+                  className="w-full px-3.5 py-3 bg-black/60 border border-white/30 rounded-xl text-xs sm:text-sm text-emerald-200 outline-none font-mono font-bold select-all"
                 />
                 <button
                   type="button"
@@ -636,7 +595,7 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full py-6 px-4 text-center bg-black/50 border-t border-white/10 relative z-10 mt-auto">
+      <footer className="w-full py-6 px-4 text-center bg-black/60 border-t border-white/10 relative z-10 mt-auto">
         <div className="max-w-md mx-auto space-y-1">
           <p className="text-xs sm:text-sm font-black text-yellow-300">
             🇵🇰 14 August Jashn-e-Azadi Mubarak 🇵🇰
@@ -644,7 +603,7 @@ export default function App() {
           <p className="text-xs text-white/90 font-bold">
             Pyare Pakistan Ke Liye Muhabbat Se Banaya Gaya ❤️
           </p>
-          <p className="text-sm sm:text-base text-emerald-300 font-bold font-urdu tracking-wide mt-1">
+          <p className="text-base text-emerald-300 font-bold font-urdu mt-1">
             پاکستان ہمیشہ زندہ باد
           </p>
         </div>
@@ -652,7 +611,7 @@ export default function App() {
 
       {/* MODAL 1: NAME CUSTOMIZATION INPUT */}
       {isNameModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-sm bg-[#01411C] border-2 border-yellow-400 rounded-3xl p-6 text-white shadow-2xl relative">
             
             <button 
@@ -660,7 +619,7 @@ export default function App() {
               onClick={() => setIsNameModalOpen(false)}
               className="absolute top-4 right-4 text-white/70 hover:text-white text-lg font-bold cursor-pointer"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
 
             <div className="text-center mb-5">
@@ -682,6 +641,7 @@ export default function App() {
                   onChange={(e) => setTypedNameInput(e.target.value)}
                   placeholder="Yahan apna naam likhein..."
                   className="w-full px-4 py-3 bg-black/50 border border-white/30 focus:border-yellow-400 rounded-xl text-white placeholder:text-white/40 outline-none text-sm font-bold transition-all"
+                  autoFocus
                 />
               </div>
 
@@ -700,9 +660,17 @@ export default function App() {
 
       {/* MODAL 2: 5-SECOND REWARDED VIGNETTE TIMER MODAL */}
       {isRewardModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-sm bg-[#002e13] border-2 border-emerald-400 rounded-3xl p-6 text-white text-center shadow-2xl relative overflow-hidden">
             
+            <button 
+              type="button"
+              onClick={() => setIsRewardModalOpen(false)}
+              className="absolute top-4 right-4 text-white/60 hover:text-white text-sm cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center text-yellow-300 text-2xl border border-emerald-400/40 animate-pulse">
               <Clock className="w-8 h-8 text-yellow-300" />
             </div>
@@ -711,13 +679,21 @@ export default function App() {
               {isTimerFinished ? "Aapka Paigham Tayyar Hai! ✅ / آپ کا پیغام تیار ہے" : `Aapka Paigham Ban Raha Hai... (${timerSecondsLeft}s)`}
             </h3>
 
-            <p className="text-xs text-emerald-200 font-bold mb-4">
-              Baraye meherbani 5 second intizar farmayein... / برائے مہربانی ۵ سیکنڈ انتظار فرمائیں
+            <p className="text-xs text-emerald-200 font-bold mb-4 font-urdu">
+              برائے مہربانی ۵ سیکنڈ انتظار فرمائیں... / Baraye meherbani 5 second intizar farmayein
             </p>
 
-            <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 mb-5 text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
+            <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 mb-4 text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
               <Info className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
               <span>Agar ad khule toh back button dabayein, reward tayyar hai!</span>
+            </div>
+
+            {/* Visual Progress Bar */}
+            <div className="w-full bg-black/50 h-2.5 rounded-full overflow-hidden mb-5 border border-white/20">
+              <div 
+                className="bg-gradient-to-r from-yellow-400 via-amber-300 to-emerald-400 h-full transition-all duration-1000 ease-linear"
+                style={{ width: `${((5 - timerSecondsLeft) / 5) * 100}%` }}
+              />
             </div>
 
             <button
