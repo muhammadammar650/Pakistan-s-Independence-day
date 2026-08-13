@@ -1,44 +1,468 @@
 <!DOCTYPE html>
-<html lang="ur" dir="ltr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>14 August Jashn-e-Azadi Mubarak 🇵🇰 - Pakistan Independence Day</title>
-
-  <!-- Comprehensive SEO & Metadata -->
-  <meta name="description" content="14 August Jashn-e-Azadi Pakistan Mubarak! Apne naam ka khas Roman Urdu paigham banayein aur WhatsApp par share karein. Pakistan Zindabad!" />
-  <meta name="keywords" content="14 august, pakistan independence day, 14 august mubarak, jashn e azadi pakistan, 14 august wish link, pakistan zindabad, whatsapp 14 august status" />
-  <meta name="author" content="Pakistan Azadi Greetings" />
-  <meta name="theme-color" content="#01411C" />
-  <meta name="rating" content="general" />
-  <meta name="referrer" content="no-referrer-when-downgrade" />
-
-  <!-- Open Graph / WhatsApp Social Preview Meta Tags -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="14 August Jashn-e-Azadi Pakistan" />
-  <meta property="og:title" content="14 August Jashn-e-Azadi Pakistan Mubarak 🇵🇰" />
-  <meta property="og:description" content="Aapke pyare dost ne aapko 14 August Jashn-e-Azadi ka khas paigham bheja hai! Yahan click karke apna paigham banayein." />
-  <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Flag_of_Pakistan.svg/1200px-Flag_of_Pakistan.svg.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="800" />
-  <meta property="og:image:alt" content="Flag of Pakistan - 14 August Independence Day" />
-  <meta property="og:url" content="https://azadiwish.netlify.app/" />
-
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="14 August Jashn-e-Azadi Pakistan Mubarak 🇵🇰" />
-  <meta name="twitter:description" content="Apne naam ka khas 14 August Jashn-e-Azadi paigham banayein aur WhatsApp par share karein." />
-  <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Flag_of_Pakistan.svg/1200px-Flag_of_Pakistan.svg.png" />
-
-  <!-- FontAwesome Icons & Google Fonts -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>14 August Jashn-e-Azadi Mubarak 🇵🇰</title>
+    
+    <!-- SEO & Metadata -->
+    <meta name="description" content="14 August Jashn-e-Azadi Pakistan Mubarak! Apne naam ka khas Roman Urdu paigham banayein aur WhatsApp par share karein. Pakistan Zindabad!" />
+    <meta name="keywords" content="14 august, pakistan independence day, 14 august mubarak, jashn e azadi pakistan, 14 august wish link, pakistan zindabad, whatsapp 14 august status" />
+    <meta name="theme-color" content="#01411C" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta id="ogTitle" property="og:title" content="14 August Jashn-e-Azadi Pakistan Mubarak 🇵🇰" />
+    <meta property="og:description" content="Aapke pyare dost ne aapko 14 August Jashn-e-Azadi ka khas paigham bheja hai! Yahan click karke apna paigham banayein." />
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Flag_of_Pakistan.svg/1200px-Flag_of_Pakistan.svg.png" />
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        urdu: ['"Amiri"', 'serif'],
+                    },
+                    colors: {
+                        pakgreen: '#01411C',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #01411C; color: white; }
+        .flag-container { perspective: 800px; transform-style: preserve-3d; transition: transform 0.25s; }
+        .flag-container:active { animation: clothTouch 0.35s forwards; }
+        @keyframes clothTouch {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95) rotateY(-5deg); }
+            100% { transform: scale(0.95); }
+        }
+        .modal-overlay { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    </style>
 </head>
-<body class="bg-[#01411C] text-white min-h-screen selection:bg-yellow-400 selection:text-black antialiased overflow-x-hidden">
-  
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
+<body class="relative overflow-x-hidden selection:bg-yellow-400 selection:text-black antialiased flex flex-col min-h-screen">
+    
+    <!-- Canvas for effects -->
+    <canvas id="effectsCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Main Content -->
+    <div class="relative z-10 w-full max-w-md mx-auto px-4 py-4 flex flex-col items-center flex-grow">
+        
+        <!-- Header -->
+        <header class="w-full flex items-center justify-between py-2.5 px-4 mb-4 bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl">
+            <div class="flex items-center gap-2.5">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" alt="Pakistan Flag" class="w-8 h-5 object-cover rounded shadow border border-white/30" />
+                <span class="text-xs font-black tracking-wider uppercase text-yellow-300">14 August Jashn-e-Azadi 🇵🇰</span>
+            </div>
+            <div class="py-1 px-3 bg-green-950/80 border border-yellow-400/50 rounded-xl text-[11px] font-extrabold text-yellow-300 shadow-sm">
+                <span>Pakistan Zindabad!</span>
+            </div>
+        </header>
+
+        <!-- TOP BANNER (320x50) -->
+        <div class="w-full flex flex-col items-center justify-center my-4 min-h-[50px]">
+          <p class="text-[10px] text-gray-400 tracking-wider mb-1 uppercase">ISHTIHAR (ADVERTISEMENT)</p>
+          <script type="text/javascript">
+            atOptions = { 'key' : '806385e1f249bc700f0b6cafdc2e5706', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+          </script>
+          <script type="text/javascript" src="https://crayondrunkcontend.com/806385e1f249bc700f0b6cafdc2e5706/invoke.js"></script>
+        </div>
+
+        <!-- FLAG -->
+        <div id="flagBtn" class="my-5 cursor-pointer flex items-center justify-center w-full select-none" title="Touch flag for fireworks!">
+            <div class="flag-container w-64 sm:w-72 aspect-[16/9] relative overflow-hidden border-2 border-white/80 rounded-2xl bg-pakgreen shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(255,215,0,0.4)] hover:scale-105 transition-transform duration-300">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg" alt="Flag of Pakistan" class="w-full h-full object-cover pointer-events-none" />
+                <div class="absolute inset-0 pointer-events-none bg-white/10 opacity-40 mix-blend-overlay"></div>
+            </div>
+        </div>
+        <p class="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-2 mb-3 drop-shadow">
+            ✨ Parcham Par Touch Karein ✨
+        </p>
+
+        <!-- AUDIO PLAYER -->
+        <audio id="anthemAudio" src="anthem.mp3" preload="none"></audio>
+        <button id="playAnthemBtn" class="mb-5 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-800 text-yellow-300 border border-yellow-400/50 rounded-full font-bold text-sm shadow-[0_0_15px_rgba(0,255,102,0.3)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 mx-auto cursor-pointer">
+            <span id="anthemText">🎵 Qaumi Tarana Sunein</span>
+        </button>
+
+        <!-- HERO CARD -->
+        <div class="w-full bg-white/10 backdrop-blur-xl border-2 border-yellow-400/60 rounded-3xl p-5 sm:p-6 text-center shadow-2xl relative overflow-hidden mb-5">
+            
+            <h1 id="mainHeading" class="text-2xl sm:text-3xl font-black text-white leading-snug mb-4 drop-shadow-md tracking-tight">
+                14 August Jashn-e-Azadi Mubarak!
+            </h1>
+
+            <div class="bg-black/55 p-4 sm:p-5 rounded-2xl border border-white/20 mb-5 text-left shadow-inner">
+                <span class="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1.5">
+                    Roman Urdu Paigham:
+                </span>
+                <p class="text-sm sm:text-base text-green-100 font-extrabold leading-relaxed">
+                    "Dil se dua hai ke humara pyara Pakistan hamesha quaim wa daim rahe, taraqqi kare aur hum sab azaad wa khushaal rahein. Aapko aur aapki pyari family ko 14 August Jashn-e-Azadi ki dheron mubarakbaad!"
+                </p>
+                
+                <hr class="border-green-700/50 my-3">
+                
+                <div class="text-center sm:text-right w-full">
+                    <span class="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-2">
+                        Urdu Paigham:
+                    </span>
+                    <p dir="rtl" class="text-xl sm:text-2xl text-green-100 font-bold leading-loose font-urdu mt-2">
+                        "دل سے دعا ہے کہ ہمارا پیارا پاکستان ہمیشہ قائم و دائم رہے، ترقی کرے اور ہم سب آزاد و خوشحال رہیں۔ آپ کو اور آپ کی پیاری فیملی کو 14 اگست جشن آزادی کی ڈھیروں مبارکباد!"
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pre-generation CTA -->
+            <button id="openNameModalBtn" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-black font-black text-base sm:text-lg shadow-2xl active:scale-95 flex items-center justify-center gap-2 border-2 border-white hover:brightness-110 transition-all cursor-pointer">
+                <span>Apna Paigham Banayein ➡️</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <!-- Post-generation Share Section (Hidden by default) -->
+            <div id="shareSection" class="hidden mt-6 pt-6 border-t border-white/20 text-left">
+                <label class="block text-xs font-black text-yellow-300 uppercase tracking-widest mb-2">
+                    Aap Ka Khas Link Tayyar Hai:
+                </label>
+                <div class="flex items-center gap-2 mb-4">
+                    <input id="generatedLink" type="text" readonly class="w-full px-3.5 py-3 bg-black/60 border border-white/30 rounded-xl text-xs sm:text-sm text-green-200 outline-none font-mono font-bold select-all" />
+                    <button id="copyBtn" class="py-3 px-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs sm:text-sm rounded-xl shadow cursor-pointer shrink-0 transition-all active:scale-95 flex items-center gap-1.5">
+                        <i id="copyIcon" class="fa-solid fa-copy"></i>
+                        <span id="copyText">Copy</span>
+                    </button>
+                </div>
+                <button id="whatsappBtn" class="w-full py-4 px-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-black text-base sm:text-lg rounded-2xl shadow-xl flex items-center justify-center gap-2.5 border border-white/30 cursor-pointer transition-all active:scale-95">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    <span>WhatsApp Par Share Karein</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM BANNER (468x60) -->
+    <div class="w-full flex flex-col items-center justify-center mt-6 mb-4 min-h-[60px]">
+      <p class="text-[10px] text-gray-400 tracking-wider mb-1 uppercase">ISHTIHAR (ADVERTISEMENT)</p>
+      <script type="text/javascript">
+        atOptions = { 'key' : '0876071ce3c5d052ee942bd6dd7a112d', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
+      </script>
+      <script type="text/javascript" src="https://crayondrunkcontend.com/0876071ce3c5d052ee942bd6dd7a112d/invoke.js"></script>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="w-full py-6 px-4 text-center bg-black/60 border-t border-white/10 mt-auto z-10">
+        <div class="max-w-md mx-auto space-y-1">
+            <p class="text-xs sm:text-sm font-black text-yellow-300">🇵🇰 14 August Jashn-e-Azadi Mubarak 🇵🇰</p>
+            <p class="text-xs text-white/90 font-bold">Pyare Pakistan Ke Liye Muhabbat Se Banaya Gaya ❤️</p>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: NAME INPUT -->
+    <div id="nameModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay transition-opacity">
+        <div class="w-full max-w-sm bg-pakgreen border-2 border-yellow-400 rounded-3xl p-6 text-white shadow-2xl relative">
+            <button id="closeNameModal" class="absolute top-4 right-4 text-white/70 hover:text-white text-lg font-bold cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 mx-auto mb-2 bg-yellow-400/20 rounded-full flex items-center justify-center text-yellow-300 text-xl border border-yellow-400/40">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h2 class="text-lg font-black text-white">Apna Naam Likhein</h2>
+                <p class="text-xs text-green-200 font-bold mt-1">Yahan apna naam darj karke apna khas link banayein.</p>
+            </div>
+            <form id="nameForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-black text-yellow-300 uppercase mb-1 ml-1">Aap Ka Naam</label>
+                    <input id="nameInput" type="text" placeholder="Yahan apna naam likhein..." class="w-full px-4 py-3 bg-black/50 border border-white/30 focus:border-yellow-400 rounded-xl text-white placeholder:text-white/40 outline-none text-sm font-bold transition-all" required />
+                </div>
+                <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-black text-sm sm:text-base shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <span>Paigham Tayyar Karein ➡️</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: TIMER MODAL -->
+    <div id="timerModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay transition-opacity">
+        <div class="w-full max-w-sm bg-[#002e13] border-2 border-green-400 rounded-3xl p-6 text-white text-center shadow-2xl relative overflow-hidden">
+            <div class="w-16 h-16 mx-auto mb-3 bg-green-500/20 rounded-full flex items-center justify-center text-yellow-300 text-2xl border border-green-400/40 animate-pulse">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <h3 id="timerHeading" class="text-base font-black text-white mb-1">Aapka paigham ban raha hai... [5]s</h3>
+            <p id="timerSubtext" class="text-xs text-green-200 font-bold mb-3">Baraye meherbani 5 second intizar karein...</p>
+
+            <!-- MODAL BANNER (320x50) -->
+            <div class="w-full flex flex-col items-center justify-center my-4 min-h-[50px]">
+              <p class="text-[10px] text-gray-400 tracking-wider mb-1 uppercase">ISHTIHAR (ADVERTISEMENT)</p>
+              <script type="text/javascript">
+                atOptions = { 'key' : '806385e1f249bc700f0b6cafdc2e5706', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+              </script>
+              <script type="text/javascript" src="https://crayondrunkcontend.com/806385e1f249bc700f0b6cafdc2e5706/invoke.js"></script>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-black/50 h-2.5 rounded-full overflow-hidden mb-5 border border-white/20">
+                <div id="progressBar" class="bg-gradient-to-r from-yellow-400 via-amber-300 to-green-400 h-full w-0 transition-all duration-1000 ease-linear"></div>
+            </div>
+
+            <button id="timerProceedBtn" disabled class="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base shadow-xl transition-all flex items-center justify-center gap-2 bg-white/10 text-white/40 border border-white/10 cursor-not-allowed opacity-60">
+                <span>Baraye Meherbani Intizar Karein...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DOM Elements
+        const mainHeading = document.getElementById('mainHeading');
+        const openNameModalBtn = document.getElementById('openNameModalBtn');
+        const shareSection = document.getElementById('shareSection');
+        const nameModal = document.getElementById('nameModal');
+        const closeNameModal = document.getElementById('closeNameModal');
+        const nameForm = document.getElementById('nameForm');
+        const nameInput = document.getElementById('nameInput');
+        
+        const timerModal = document.getElementById('timerModal');
+        const timerHeading = document.getElementById('timerHeading');
+        const timerSubtext = document.getElementById('timerSubtext');
+        const progressBar = document.getElementById('progressBar');
+        const timerProceedBtn = document.getElementById('timerProceedBtn');
+        
+        const generatedLink = document.getElementById('generatedLink');
+        const copyBtn = document.getElementById('copyBtn');
+        const copyIcon = document.getElementById('copyIcon');
+        const copyText = document.getElementById('copyText');
+        const whatsappBtn = document.getElementById('whatsappBtn');
+        const flagBtn = document.getElementById('flagBtn');
+        const effectsCanvas = document.getElementById('effectsCanvas');
+
+        // Audio Elements
+        const anthemAudio = document.getElementById('anthemAudio');
+        const playAnthemBtn = document.getElementById('playAnthemBtn');
+        const anthemText = document.getElementById('anthemText');
+
+        let senderName = "";
+        const MANDATORY_BASE_DOMAIN = 'https://azadiwish.netlify.app';
+
+        // URL Parameter Parsing
+        const urlParams = new URLSearchParams(window.location.search);
+        const nameParam = urlParams.get('n') || urlParams.get('name');
+        if (nameParam && nameParam.trim() !== '') {
+            senderName = nameParam.trim();
+            mainHeading.innerText = `${senderName} Ki Taraf Se Aapko 14 August Mubarak!`;
+            document.title = `${senderName} Ki Taraf Se - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+            const ogTitle = document.getElementById('ogTitle');
+            if(ogTitle) ogTitle.content = `${senderName} Ki Taraf Se - 14 August Jashn-e-Azadi Mubarak 🇵🇰`;
+        }
+
+        // Modals Toggle
+        openNameModalBtn.addEventListener('click', () => { nameModal.classList.remove('hidden'); nameInput.focus(); });
+        closeNameModal.addEventListener('click', () => { nameModal.classList.add('hidden'); });
+
+        // Name Form Submit -> Open Timer
+        nameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = nameInput.value.trim();
+            if (!val) { alert("Baraye meherbani apna naam darj karein!"); return; }
+            senderName = val;
+            nameModal.classList.add('hidden');
+            startTimerModal();
+        });
+
+        function startTimerModal() {
+            timerModal.classList.remove('hidden');
+            let secondsLeft = 5;
+            timerProceedBtn.disabled = true;
+            timerProceedBtn.className = "w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base shadow-xl transition-all flex items-center justify-center gap-2 bg-white/10 text-white/40 border border-white/10 cursor-not-allowed opacity-60";
+            timerProceedBtn.innerHTML = "<span>Baraye Meherbani Intizar Karein...</span>";
+            
+            progressBar.style.width = "0%";
+            timerHeading.innerText = `Aapka paigham ban raha hai... [${secondsLeft}]s`;
+
+            const interval = setInterval(() => {
+                secondsLeft--;
+                const progressPct = ((5 - secondsLeft) / 5) * 100;
+                progressBar.style.width = `${progressPct}%`;
+                timerHeading.innerText = `Aapka paigham ban raha hai... [${secondsLeft}]s`;
+
+                if (secondsLeft <= 0) {
+                    clearInterval(interval);
+                    timerHeading.innerText = "Aapka Link Tayyar Hai! ✅";
+                    timerSubtext.innerText = "Aage barhne ke liye button par click karein";
+                    timerProceedBtn.disabled = false;
+                    timerProceedBtn.className = "w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base shadow-xl transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-400 to-amber-400 text-black border-2 border-white cursor-pointer hover:scale-105 active:scale-95 animate-pulse";
+                    timerProceedBtn.innerHTML = "<span>Aage Barhein ➡️</span>";
+                    createExplosion(window.innerWidth / 2, window.innerHeight / 2);
+                }
+            }, 1000);
+        }
+
+        // Proceed Button Click
+        timerProceedBtn.addEventListener('click', () => {
+            timerModal.classList.add('hidden');
+            mainHeading.innerText = `${senderName} Ki Taraf Se 14 August Mubarak!`;
+            openNameModalBtn.classList.add('hidden');
+            shareSection.classList.remove('hidden');
+
+            const shareUrl = `${MANDATORY_BASE_DOMAIN}/?n=${encodeURIComponent(senderName)}`;
+            generatedLink.value = shareUrl;
+
+            if (window.history.pushState) {
+                window.history.pushState({}, '', `/?n=${encodeURIComponent(senderName)}`);
+            }
+            createExplosion(window.innerWidth / 2, window.innerHeight / 2);
+        });
+
+        // Copy Button
+        copyBtn.addEventListener('click', () => {
+            if(!generatedLink.value) return;
+            navigator.clipboard.writeText(generatedLink.value).then(() => {
+                copyIcon.className = "fa-solid fa-check";
+                copyText.innerText = "Copied!";
+                setTimeout(() => {
+                    copyIcon.className = "fa-solid fa-copy";
+                    copyText.innerText = "Copy";
+                }, 2000);
+            });
+        });
+
+        // WhatsApp Button
+        whatsappBtn.addEventListener('click', () => {
+            const text = `Dekhein ${senderName} ne aapke liye 14 August ka special paigham bheja hai! Yahan click karke dekhein: ${generatedLink.value}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+            createExplosion(window.innerWidth / 2, window.innerHeight / 2);
+        });
+
+        // Anthem Audio Logic
+        let playPromise;
+        playAnthemBtn.addEventListener('click', () => {
+            if (anthemAudio.paused) {
+                playPromise = anthemAudio.play();
+                if (playPromise !== undefined) {
+                    anthemText.innerText = "⏸️ Tarana Rokein";
+                    playPromise.catch(error => {
+                        console.log("Audio play error:", error);
+                        anthemText.innerText = "🎵 Qaumi Tarana Sunein";
+                    });
+                }
+            } else {
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        anthemAudio.pause();
+                        anthemText.innerText = "🎵 Qaumi Tarana Sunein";
+                    }).catch(error => {
+                        console.log("Audio play error before pause:", error);
+                    });
+                } else {
+                    anthemAudio.pause();
+                    anthemText.innerText = "🎵 Qaumi Tarana Sunein";
+                }
+            }
+        });
+        
+        // Ensure button resets if audio ends naturally
+        anthemAudio.addEventListener('ended', () => {
+            anthemText.innerText = "🎵 Qaumi Tarana Sunein";
+        });
+
+        // Fireworks Canvas Engine
+        const ctx = effectsCanvas.getContext('2d');
+        let particles = [];
+        
+        function resize() {
+            effectsCanvas.width = window.innerWidth;
+            effectsCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function createExplosion(x, y) {
+            const colors = ['#FFD700', '#00FF66', '#FFFFFF', '#32CD32'];
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    radius: Math.random() * 3 + 1,
+                    alpha: 1,
+                    decay: Math.random() * 0.015 + 0.01
+                });
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, effectsCanvas.width, effectsCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05; // gravity
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = p.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+            if(Math.random() < 0.02) {
+                createExplosion(Math.random() * window.innerWidth, Math.random() * (window.innerHeight * 0.6));
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        flagBtn.addEventListener('click', (e) => {
+            createExplosion(e.clientX, e.clientY);
+        });
+
+        // ==================================================
+        // ADSTERRA POPUNDER & SOCIAL BAR LOGIC
+        // ==================================================
+        
+        // A) Adsterra Popunder (Strict 3-Click Trigger)
+        let clickCount = 0;
+        let popunderLoaded = false;
+        document.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 3 && !popunderLoaded) {
+                const popScript = document.createElement('script');
+                popScript.src = 'https://crayondrunkcontend.com/d8/b1/9c/d8b19cbf0b391a7166103ae2f0922619.js';
+                document.body.appendChild(popScript);
+                popunderLoaded = true;
+            }
+        });
+
+        // B) Social Bar (15-Second Delay - Run Once)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (!document.getElementById('adsterra-social')) {
+                    const social = document.createElement('script');
+                    social.id = 'adsterra-social';
+                    social.type = 'text/javascript';
+                    social.src = '//crayondrunkcontend.com/f3/6f/3a/f36f3a833fca32c9ec628b790b6207a7.js';
+                    document.body.appendChild(social);
+                }
+            }, 15000);
+        });
+    </script>
 </body>
 </html>
