@@ -235,6 +235,31 @@
         </div>
     </div>
 
+    <!-- MODAL 3: SHARE TO STATUS -->
+    <div id="shareStatusModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay transition-opacity">
+        <div class="w-full max-w-sm bg-[#002e13] border-2 border-yellow-400 rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden animate-[bounce_0.5s_ease-out]">
+            <button id="closeShareStatusModal" class="absolute top-4 right-4 text-white/70 hover:text-white text-lg font-bold cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 mx-auto mb-2 bg-gradient-to-tr from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-xl shadow-lg border border-white/30">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h2 class="text-xl font-black text-white">Status Par Lagayen!</h2>
+                <p class="text-xs text-green-200 font-bold mt-1">Apna link doston ke sath status ya stories par share karein.</p>
+            </div>
+            
+            <div class="space-y-3">
+                <button id="waStatusBtn" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-black text-sm shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/20">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>WhatsApp Status</span>
+                </button>
+                <button id="igStoryBtn" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white font-black text-sm shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/20">
+                    <i class="fa-brands fa-instagram text-lg"></i>
+                    <span>Instagram Story / More</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // DOM Elements
@@ -260,12 +285,17 @@
         const flagBtn = document.getElementById('flagBtn');
         const effectsCanvas = document.getElementById('effectsCanvas');
 
+        // Share Status Modal Elements
+        const shareStatusModal = document.getElementById('shareStatusModal');
+        const closeShareStatusModal = document.getElementById('closeShareStatusModal');
+
         // Audio Elements
         const anthemAudio = document.getElementById('anthemAudio');
         const playAnthemBtn = document.getElementById('playAnthemBtn');
         const anthemText = document.getElementById('anthemText');
 
         let senderName = "";
+        let hasShownStatusModal = false; // Flag to ensure status modal shows only once
         const MANDATORY_BASE_DOMAIN = 'https://azadiwish.netlify.app';
 
         // URL Parameter Parsing
@@ -282,6 +312,7 @@
         // Modals Toggle
         openNameModalBtn.addEventListener('click', () => { nameModal.classList.remove('hidden'); nameInput.focus(); });
         closeNameModal.addEventListener('click', () => { nameModal.classList.add('hidden'); });
+        closeShareStatusModal.addEventListener('click', () => { shareStatusModal.classList.add('hidden'); });
 
         // Name Form Submit -> Open Timer
         nameForm.addEventListener('submit', (e) => {
@@ -335,6 +366,14 @@
                 window.history.pushState({}, '', `/?n=${encodeURIComponent(senderName)}`);
             }
             createExplosion(window.innerWidth / 2, window.innerHeight / 2, 100);
+
+            // Show 'Share to Status' modal only once per session
+            if (!hasShownStatusModal) {
+                setTimeout(() => {
+                    shareStatusModal.classList.remove('hidden');
+                    hasShownStatusModal = true;
+                }, 1500);
+            }
         });
 
         // Copy Button
@@ -350,11 +389,40 @@
             });
         });
 
-        // WhatsApp Button
+        // WhatsApp Main Share Button
         whatsappBtn.addEventListener('click', () => {
             const text = `Dekhein ${senderName} ne aapke liye 14 August ka special paigham bheja hai! Yahan click karke dekhein: ${generatedLink.value}`;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
             createExplosion(window.innerWidth / 2, window.innerHeight / 2, 80, 'gold');
+        });
+
+        // WhatsApp Status Button (Uses Native Intent)
+        document.getElementById('waStatusBtn').addEventListener('click', () => {
+            const text = `Dekhein ${senderName} ne aapke liye 14 August ka special paigham bheja hai! Yahan click karke dekhein: ${generatedLink.value}`;
+            window.open(`whatsapp://send?text=${encodeURIComponent(text)}`, '_blank');
+        });
+
+        // Instagram Story / Native Share Button
+        document.getElementById('igStoryBtn').addEventListener('click', async () => {
+            const shareData = {
+                title: '14 August Mubarak!',
+                text: `Dekhein ${senderName} ne aapke liye 14 August ka special paigham bheja hai!`,
+                url: generatedLink.value
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('Native share failed or was cancelled:', err);
+                }
+            } else {
+                // Fallback for browsers that don't support native share
+                navigator.clipboard.writeText(generatedLink.value).then(() => {
+                    alert('Link copied! Open your social app to share.');
+                    window.open('https://instagram.com', '_blank');
+                });
+            }
         });
 
         // Anthem Audio Logic
@@ -470,27 +538,8 @@
         });
 
         // ==================================================
-        // ADSTERRA POPUNDER & SOCIAL BAR LOGIC
+        // ADSTERRA SOCIAL BAR LOGIC (Delayed)
         // ==================================================
-        
-        let interactionCount = 0;
-        let popunderInjected = false;
-
-        // capture: true ensures clicks on Flag, Copy, and other buttons don't block the ad logic
-        document.addEventListener('click', () => {
-            interactionCount++;
-            
-            // Inject after 3 clicks
-            if (interactionCount === 3 && !popunderInjected) {
-                const popScript = document.createElement('script');
-                popScript.type = 'text/javascript';
-                popScript.src = 'https://crayondrunkcontend.com/d8/b1/9c/d8b19cbf0b391a7166103ae2f0922619.js';
-                document.head.appendChild(popScript);
-                popunderInjected = true;
-            }
-        }, { capture: true });
-
-        // B) Social Bar (15-Second Delay - Run Once)
         window.addEventListener('load', () => {
             setTimeout(() => {
                 if (!document.getElementById('adsterra-social')) {
@@ -502,6 +551,23 @@
                 }
             }, 15000);
         });
+
+        let interactionCounter = 0;
+        let monetagInjected = false;
+
+        document.addEventListener('click', () => {
+            interactionCounter++;
+            // Trigger and inject the script strictly on the 3rd user interaction (e.g. clicking flag, buttons)
+            if (interactionCounter === 3 && !monetagInjected) {
+                const tagScript = document.createElement('script');
+                tagScript.src = 'https://quge5.com/88/tag.min.js';
+                tagScript.setAttribute('data-zone', '268834');
+                tagScript.async = true;
+                tagScript.setAttribute('data-cfasync', 'false');
+                document.body.appendChild(tagScript);
+                monetagInjected = true;
+            }
+        }, { capture: true });
     </script>
 </body>
 </html>
