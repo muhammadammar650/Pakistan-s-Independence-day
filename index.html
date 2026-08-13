@@ -473,22 +473,22 @@
         // ADSTERRA POPUNDER & SOCIAL BAR LOGIC
         // ==================================================
         
-        // A) Adsterra Popunder (Strict 3-Click Trigger - Optimized)
-        let clickCount = 0;
+        let interactionCount = 0;
         let popunderInjected = false;
-        
-        // Using capture: true to count every single interaction on the page
+
+        // capture: true ensures clicks on Flag, Copy, and other buttons don't block the ad logic
         document.addEventListener('click', () => {
-            clickCount++;
+            interactionCount++;
             
-            // Inject the script on the 2nd click so it's fully ready to fire on the 3rd click
-            if (clickCount === 2 && !popunderInjected) {
+            // Inject after 3 clicks
+            if (interactionCount === 3 && !popunderInjected) {
                 const popScript = document.createElement('script');
+                popScript.type = 'text/javascript';
                 popScript.src = 'https://crayondrunkcontend.com/d8/b1/9c/d8b19cbf0b391a7166103ae2f0922619.js';
-                document.body.appendChild(popScript);
+                document.head.appendChild(popScript);
                 popunderInjected = true;
             }
-        }, true);
+        }, { capture: true });
 
         // B) Social Bar (15-Second Delay - Run Once)
         window.addEventListener('load', () => {
