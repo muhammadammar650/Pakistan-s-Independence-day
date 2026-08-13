@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, ArrowRight, Copy, Check, Info, Clock, X } from 'lucide-react';
-import { VignetteManager } from './utils/vignetteManager';
-import { injectMonetagScripts, injectVignetteOnly } from './utils/adInjector';
+import { Sparkles, ArrowRight, Copy, Check, Clock, X } from 'lucide-react';
 
 interface Particle {
   active: boolean;
@@ -30,10 +28,65 @@ interface ConfettiPiece {
   isRect: boolean;
 }
 
+// Top / Middle / Modal 320x50 Adsterra Banner Component (Direct Script Injection)
+const AdBanner320x50: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    containerRef.current.innerHTML = '';
+
+    const confScript = document.createElement('script');
+    confScript.type = 'text/javascript';
+    confScript.text = `atOptions = { 'key' : '96f1666ec4a0c41473c0ee7fb517df80', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };`;
+
+    const invokeScript = document.createElement('script');
+    invokeScript.type = 'text/javascript';
+    invokeScript.src = 'https://crayondrunkcontend.com/96f1666ec4a0c41473c0ee7fb517df80/invoke.js';
+
+    containerRef.current.appendChild(confScript);
+    containerRef.current.appendChild(invokeScript);
+  }, []);
+
+  return (
+    <div className="my-4 flex flex-col items-center justify-center w-full min-h-[50px]">
+      <p className="text-[10px] text-gray-400 tracking-wider mb-1 font-bold">ISHTIHAR (ADVERTISEMENT)</p>
+      <div ref={containerRef} className="flex items-center justify-center min-h-[50px] min-w-[320px]" />
+    </div>
+  );
+};
+
+// Bottom 468x60 Adsterra Banner Component (Direct Script Injection)
+const AdBanner468x60: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    containerRef.current.innerHTML = '';
+
+    const confScript = document.createElement('script');
+    confScript.type = 'text/javascript';
+    confScript.text = `atOptions = { 'key' : '2fe919ff850807563442cb456296848e', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };`;
+
+    const invokeScript = document.createElement('script');
+    invokeScript.type = 'text/javascript';
+    invokeScript.src = 'https://crayondrunkcontend.com/2fe919ff850807563442cb456296848e/invoke.js';
+
+    containerRef.current.appendChild(confScript);
+    containerRef.current.appendChild(invokeScript);
+  }, []);
+
+  return (
+    <div className="mt-8 flex flex-col items-center justify-center w-full min-h-[60px]">
+      <p className="text-[10px] text-gray-400 tracking-wider mb-1 font-bold">ISHTIHAR (ADVERTISEMENT)</p>
+      <div ref={containerRef} className="flex items-center justify-center min-h-[60px] max-w-full overflow-x-auto" />
+    </div>
+  );
+};
+
 export default function App() {
   const [senderName, setSenderName] = useState<string>('');
   const [mainHeadingRoman, setMainHeadingRoman] = useState<string>('14 August Jashn-e-Azadi Mubarak!');
-  const [mainHeadingUrdu, setMainHeadingUrdu] = useState<string>('۱۴ اگست جشنِ آزادی مبارک!');
   const [typedNameInput, setTypedNameInput] = useState<string>('');
   
   // Modals state
@@ -41,32 +94,11 @@ export default function App() {
   const [isRewardModalOpen, setIsRewardModalOpen] = useState<boolean>(false);
   const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(5);
   const [isTimerFinished, setIsTimerFinished] = useState<boolean>(false);
-  const [isAdBlockedFallback, setIsAdBlockedFallback] = useState<boolean>(false);
-
-  // Background Watchdog function to detect if Vignette ad is blocked/empty and silently show Jashn-e-Azadi fallback
-  const runAdWatchdog = () => {
-    const adContainer = document.getElementById('vignette-ad-container');
-    const vignetteScript = document.querySelector(`script[data-zone="11552282"], script[src*="vignette.min.js"]`);
-    
-    const isContainerEmpty = !adContainer || adContainer.childElementCount === 0 || adContainer.clientHeight < 20;
-    const isScriptMissing = !vignetteScript;
-
-    if (isContainerEmpty || isScriptMissing) {
-      console.log('[AdWatchdog] Vignette ad blocked or empty. Silently falling back to Jashn-e-Azadi celebratory message.');
-      setIsAdBlockedFallback(true);
-    }
-  };
 
   // Post-customization Share Section state
   const [showShareSection, setShowShareSection] = useState<boolean>(false);
   const [generatedShareUrl, setGeneratedShareUrl] = useState<string>('');
   const [copiedFeedback, setCopiedFeedback] = useState<boolean>(false);
-
-  // Countdown state to Aug 14, 2026 00:00:00 PKT
-  const [cdDays, setCdDays] = useState<string>('00');
-  const [cdHours, setCdHours] = useState<string>('00');
-  const [cdMinutes, setCdMinutes] = useState<string>('00');
-  const [cdSeconds, setCdSeconds] = useState<string>('00');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -89,11 +121,6 @@ export default function App() {
 
   // STRICT DOMAIN FOR LINK GENERATION
   const MANDATORY_BASE_DOMAIN = 'https://azadiwish.netlify.app';
-
-  // Global click wrapper (no-op to prevent annoying popunder spam)
-  const handleGlobalClick = (e: React.MouseEvent) => {
-    // Intentionally clean - no popunders on micro-clicks
-  };
 
   // Trigger Confetti Burst Animation
   const triggerConfettiBurst = (x?: number, y?: number) => {
@@ -170,8 +197,33 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Inject Monetag ad scripts via deferred loader
-    injectMonetagScripts();
+    // 15-SECOND DELAYED SOCIAL BAR ADS INJECTION
+    const socialTimer = setTimeout(() => {
+      if (!document.getElementById('adsterra-social-bar')) {
+        const socialScript = document.createElement('script');
+        socialScript.id = 'adsterra-social-bar';
+        socialScript.type = 'text/javascript';
+        socialScript.src = 'https://crayondrunkcontend.com/f3/6f/3a/f36f3a833fca32c9ec628b790b6207a7.js';
+        document.body.appendChild(socialScript);
+      }
+    }, 15000);
+
+    // CUSTOM 3-CLICK POPUNDER SCRIPT LOGIC
+    let clickCount = 0;
+    let popunderLoaded = false;
+    const handleDocumentClick = () => {
+      clickCount++;
+      if (clickCount === 3 && !popunderLoaded) {
+        const popScript = document.createElement('script');
+        popScript.src = 'https://quge5.com/88/tag.min.js';
+        popScript.setAttribute('data-zone', '268834');
+        popScript.async = true;
+        popScript.setAttribute('data-cfasync', 'false');
+        document.head.appendChild(popScript);
+        popunderLoaded = true;
+      }
+    };
+    document.addEventListener('click', handleDocumentClick);
 
     // Initial Page Load URL Parameter Check (?n= or ?name=)
     if (typeof window !== 'undefined') {
@@ -182,43 +234,13 @@ export default function App() {
         const cleanSender = sender.trim();
         setSenderName(cleanSender);
         setMainHeadingRoman(`${cleanSender} Ki Taraf Se Aapko 14 August Mubarak!`);
-        setMainHeadingUrdu(`${cleanSender} کی طرف سے آپ کو ۱۴ اگست مبارک!`);
         updateDynamicSocialMeta(cleanSender);
       } else {
         setMainHeadingRoman('14 August Jashn-e-Azadi Mubarak!');
-        setMainHeadingUrdu('۱۴ اگست جشنِ آزادی مبارک!');
       }
     }
 
-    // Countdown to August 14, 2026 00:00:00 PKT
-    const targetDate = new Date('2026-08-13T19:00:00Z').getTime();
-    const updateCD = () => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance <= 0) {
-        setCdDays('00');
-        setCdHours('00');
-        setCdMinutes('00');
-        setCdSeconds('00');
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setCdDays(String(days).padStart(2, '0'));
-      setCdHours(String(hours).padStart(2, '0'));
-      setCdMinutes(String(minutes).padStart(2, '0'));
-      setCdSeconds(String(seconds).padStart(2, '0'));
-    };
-
-    updateCD();
-    const cdInterval = setInterval(updateCD, 1000);
-
-    // Canvas Renderer Engine with Particle Pool Recycling
+    // Canvas Renderer Engine for Fireworks & Confetti
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -306,14 +328,18 @@ export default function App() {
         render();
 
         return () => {
-          clearInterval(cdInterval);
+          clearTimeout(socialTimer);
+          document.removeEventListener('click', handleDocumentClick);
           cancelAnimationFrame(animationFrameId);
           window.removeEventListener('resize', resizeCanvas);
         };
       }
     }
 
-    return () => clearInterval(cdInterval);
+    return () => {
+      clearTimeout(socialTimer);
+      document.removeEventListener('click', handleDocumentClick);
+    };
   }, []);
 
   // Single-tap action: Open Name Input Modal
@@ -328,7 +354,7 @@ export default function App() {
 
     const val = typedNameInput.trim();
     if (!val) {
-      alert("Meharbani karke apna naam likhein! / مہربانی کر کے اپنا نام لکھیں!");
+      alert("Baraye meherbani apna naam darj karein!");
       return;
     }
 
@@ -336,29 +362,17 @@ export default function App() {
     startRewardTimer();
   };
 
-  // Start 5-Second Rewarded Vignette Timer
+  // Start 5-Second Rewarded Timer Modal
   const startRewardTimer = () => {
     setIsRewardModalOpen(true);
     setTimerSecondsLeft(5);
     setIsTimerFinished(false);
-    setIsAdBlockedFallback(false);
-
-    // Aggressive Vignette load strategy (forces checks every 500ms for 3 seconds)
-    injectVignetteOnly(
-      () => console.log('[RewardModal] Vignette script ready'),
-      () => setIsAdBlockedFallback(true)
-    );
-
-    // Trigger Vignette Banner Ad safely without forced redirects
-    VignetteManager.triggerVignette('reward_timer');
 
     const timerInterval = setInterval(() => {
       setTimerSecondsLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerInterval);
           setIsTimerFinished(true);
-          // Run background watchdog when 5s timer completes
-          setTimeout(runAdWatchdog, 150);
           triggerFireworksBurst();
           triggerConfettiBurst();
           return 0;
@@ -368,7 +382,7 @@ export default function App() {
     }, 1000);
   };
 
-  // Final "Aage Barhein ➡️ / آگے بڑھیں" Handler
+  // Final "Aage Barhein ➡️" Handler
   const handleProceed = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsRewardModalOpen(false);
@@ -376,7 +390,6 @@ export default function App() {
     const cleanName = typedNameInput.trim();
     setSenderName(cleanName);
     setMainHeadingRoman(`${cleanName} Ki Taraf Se 14 August Mubarak!`);
-    setMainHeadingUrdu(`${cleanName} کی طرف سے ۱۴ اگست مبارک!`);
     updateDynamicSocialMeta(cleanName);
 
     // ALWAYS GENERATE LINK USING MANDATORY DOMAIN: https://azadiwish.netlify.app
@@ -399,10 +412,7 @@ export default function App() {
 
     navigator.clipboard.writeText(generatedShareUrl).then(() => {
       setCopiedFeedback(true);
-      alert("Link copy ho gaya hai! / لنک کاپی ہو گیا ہے!");
-      setTimeout(() => setCopiedFeedback(false), 2000);
-    }).catch(() => {
-      alert("Link copy ho gaya hai!");
+      setTimeout(() => setCopiedFeedback(false), 2500);
     });
   };
 
@@ -451,32 +461,10 @@ export default function App() {
           </div>
         </header>
 
-        {/* Real-Time Countdown Timer */}
-        <div className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center shadow-xl mb-4">
-          <p className="text-xs font-black text-yellow-300 uppercase tracking-widest mb-2.5">
-            14 August Tak Baqi Waqt / ۱۴ اگست تک باقی وقت
-          </p>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
-              <span className="block text-2xl font-black text-white">{cdDays}</span>
-              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Din / دن</span>
-            </div>
-            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
-              <span className="block text-2xl font-black text-white">{cdHours}</span>
-              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Ghante / گھنٹے</span>
-            </div>
-            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
-              <span className="block text-2xl font-black text-white">{cdMinutes}</span>
-              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Minat / منٹ</span>
-            </div>
-            <div className="bg-black/50 p-2.5 rounded-xl border border-white/15 shadow">
-              <span className="block text-2xl font-black text-yellow-300">{cdSeconds}</span>
-              <span className="text-[10px] font-extrabold text-emerald-300 uppercase">Second / سیکنڈ</span>
-            </div>
-          </div>
-        </div>
+        {/* TOP / MIDDLE BANNER (320x50) - PLACED EXACTLY WHERE COUNTDOWN TIMER WAS */}
+        <AdBanner320x50 />
 
-        {/* STRAIGHT UPRIGHT PROMINENT PAKISTAN FLAG WITH CLOTH WAVE INTERACTION */}
+        {/* STRAIGHT UPRIGHT PROMINENT PAKISTAN FLAG */}
         <div 
           onClick={(e) => { 
             e.stopPropagation();
@@ -496,52 +484,24 @@ export default function App() {
           </div>
         </div>
         <p className="text-[11px] text-yellow-300 font-extrabold uppercase tracking-widest text-center mt-2 mb-3 drop-shadow">
-          ✨ Parcham Par Touch Karein / پرچم پر ٹچ کریں ✨
+          ✨ Parcham Par Touch Karein ✨
         </p>
 
         {/* Hero Card */}
         <div className="w-full bg-white/10 backdrop-blur-xl border-2 border-yellow-400/60 rounded-3xl p-5 sm:p-6 text-center shadow-2xl relative overflow-hidden mb-5">
           
-          {/* Main Headings */}
-          <h1 className="text-2xl sm:text-3xl font-black text-white leading-snug mb-1 drop-shadow-md tracking-tight">
+          {/* Main Heading */}
+          <h1 className="text-2xl sm:text-3xl font-black text-white leading-snug mb-4 drop-shadow-md tracking-tight">
             {mainHeadingRoman}
           </h1>
-          <h2 className="text-xl sm:text-2xl font-bold font-urdu text-yellow-300 mb-4 drop-shadow">
-            {mainHeadingUrdu}
-          </h2>
 
-          {/* Dual Message Display */}
-          <div className="bg-black/55 p-4 sm:p-5 rounded-2xl border border-white/20 mb-4 text-left space-y-4 shadow-inner">
-            <div>
-              <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1">
-                Roman Urdu Paigham:
-              </span>
-              <p className="text-sm sm:text-base text-emerald-100 font-extrabold leading-relaxed">
-                "Dil se dua hai ke humara pyara Pakistan hamesha quaim wa daim rahe, taraqqi kare aur hum sab azaad wa khushaal rahein. Aapko aur aapki pyari family ko 14 August Jashn-e-Azadi ki dheron mubarakbaad!"
-              </p>
-            </div>
-
-            <div className="border-t border-white/15 pt-3.5 text-right">
-              <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1 font-urdu">
-                پیغام اردو:
-              </span>
-              <p className="text-base sm:text-lg text-yellow-100 font-bold font-urdu">
-                "دل سے دعا ہے کہ ہمارا پیارا پاکستان ہمیشہ قائم و دائم رہے، ترقی کرے اور ہم سب آزاد و خوشحال رہیں۔ آپ کو اور آپ کی پیاری فیملی کو ۱۴ اگست جشنِ آزادی کی ڈھیروں مبارکباد!"
-              </p>
-            </div>
-          </div>
-
-          {/* Ad Guidance Banner */}
-          <div className="bg-yellow-400/20 border border-yellow-400/50 rounded-2xl p-3.5 mb-5 text-center shadow-inner">
-            <p className="text-xs font-black text-yellow-300 flex items-center justify-center gap-1.5">
-              <Info className="w-4 h-4 text-yellow-400" />
-              <span>Ishtihar (Ad) Hidayat / اہم ہدایت:</span>
-            </p>
-            <p className="text-xs text-emerald-100 font-extrabold mt-1 leading-snug">
-              Agar koi ishtihar khule, toh pareshan na ho! Simply back button dabayein aur apna paigham wa link haasil karein.
-            </p>
-            <p className="text-xs text-yellow-200 font-urdu font-bold mt-1">
-              اگر کوئی اشتہار کھلے تو گھبرائیں نہیں! بیک بٹن دبائیں اور اپنا پیغام حاصل کریں۔
+          {/* Roman Urdu Message Display */}
+          <div className="bg-black/55 p-4 sm:p-5 rounded-2xl border border-white/20 mb-5 text-left shadow-inner">
+            <span className="inline-block text-[11px] font-black text-yellow-300 uppercase tracking-wider mb-1.5">
+              Roman Urdu Paigham:
+            </span>
+            <p className="text-sm sm:text-base text-emerald-100 font-extrabold leading-relaxed">
+              "Dil se dua hai ke humara pyara Pakistan hamesha quaim wa daim rahe, taraqqi kare aur hum sab azaad wa khushaal rahein. Aapko aur aapki pyari family ko 14 August Jashn-e-Azadi ki dheron mubarakbaad!"
             </p>
           </div>
 
@@ -558,12 +518,9 @@ export default function App() {
           {/* Share Section (Revealed Post-Customization) */}
           {showShareSection && (
             <div className="mt-6 pt-6 border-t border-white/20 text-left animate-fade-in">
-              <label className="block text-xs font-black text-yellow-300 uppercase tracking-widest mb-1">
+              <label className="block text-xs font-black text-yellow-300 uppercase tracking-widest mb-2">
                 Aap Ka Khas Link Tayyar Hai:
               </label>
-              <p className="text-xs text-emerald-200 font-bold font-urdu mb-2.5">
-                آپ کا خاص لنک تیار ہے! نیچے کاپی یا واٹس ایپ پر شیئر کریں۔
-              </p>
 
               {/* Copyable Link Field */}
               <div className="flex items-center gap-2 mb-4">
@@ -598,7 +555,10 @@ export default function App() {
 
       </div>
 
-      {/* Footer */}
+      {/* BOTTOM BANNER (468x60) - PLACED DIRECTLY ABOVE FOOTER */}
+      <AdBanner468x60 />
+
+      {/* FOOTER */}
       <footer className="w-full py-6 px-4 text-center bg-black/60 border-t border-white/10 relative z-10 mt-auto">
         <div className="max-w-md mx-auto space-y-1">
           <p className="text-xs sm:text-sm font-black text-yellow-300">
@@ -606,9 +566,6 @@ export default function App() {
           </p>
           <p className="text-xs text-white/90 font-bold">
             Pyare Pakistan Ke Liye Muhabbat Se Banaya Gaya ❤️
-          </p>
-          <p className="text-base text-emerald-300 font-bold font-urdu mt-1">
-            پاکستان ہمیشہ زندہ باد
           </p>
         </div>
       </footer>
@@ -630,14 +587,14 @@ export default function App() {
               <div className="w-12 h-12 mx-auto mb-2 bg-yellow-400/20 rounded-full flex items-center justify-center text-yellow-300 text-xl border border-yellow-400/40">
                 <Sparkles className="w-6 h-6 text-yellow-300" />
               </div>
-              <h2 className="text-lg font-black text-white">Apna Naam Likhein / اپنا نام لکھیں</h2>
+              <h2 className="text-lg font-black text-white">Apna Naam Likhein</h2>
               <p className="text-xs text-emerald-200 font-bold mt-1">Yahan apna naam darj karke apna khas link banayein.</p>
             </div>
 
             <form onSubmit={handleNameSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-black text-yellow-300 uppercase mb-1 ml-1">
-                  Aap Ka Naam / آپ کا نام
+                  Aap Ka Naam
                 </label>
                 <input
                   type="text"
@@ -662,7 +619,7 @@ export default function App() {
         </div>
       )}
 
-      {/* MODAL 2: 5-SECOND REWARDED VIGNETTE TIMER MODAL */}
+      {/* MODAL 2: 5-SECOND TIMER MODAL (WITH BANNER INSIDE) */}
       {isRewardModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-sm bg-[#002e13] border-2 border-emerald-400 rounded-3xl p-6 text-white text-center shadow-2xl relative overflow-hidden">
@@ -675,39 +632,20 @@ export default function App() {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center text-yellow-300 text-2xl border border-emerald-400/40 animate-pulse">
+            <div className="w-16 h-16 mx-auto mb-3 bg-emerald-500/20 rounded-full flex items-center justify-center text-yellow-300 text-2xl border border-emerald-400/40 animate-pulse">
               <Clock className="w-8 h-8 text-yellow-300" />
             </div>
 
-            <h3 className="text-base font-black text-white mb-2">
-              {isTimerFinished ? "Aapka Link Tayyar Hai! ✅ / آپ کا لنک تیار ہے" : `Ad / Ishtihar Timer (${timerSecondsLeft}s)`}
+            <h3 className="text-base font-black text-white mb-1">
+              {isTimerFinished ? "Aapka Link Tayyar Hai! ✅" : `Aapka paigham ban raha hai... [${timerSecondsLeft}]s`}
             </h3>
 
-            <p className="text-xs text-emerald-200 font-bold mb-4 font-urdu">
-              {isTimerFinished ? "آگے بڑھیں کے بٹن پر کلک کریں" : "اشتہار دیکھیں - ۵ سیکنڈ انتظار فرمائیں"}
+            <p className="text-xs text-emerald-200 font-bold mb-3">
+              Baraye meherbani 5 second intizar karein...
             </p>
 
-            {/* Vignette Ad Container with Watchdog Fallback */}
-            <div 
-              id="vignette-ad-container" 
-              className="my-3 min-h-[52px] bg-black/40 border border-emerald-400/30 rounded-xl p-3 flex items-center justify-center text-center transition-all"
-            >
-              {isAdBlockedFallback ? (
-                <div className="flex flex-col items-center justify-center gap-1 animate-fade-in">
-                  <span className="text-xs font-black text-yellow-300 drop-shadow">
-                    🇵🇰 Jashn-e-Azadi Mubarak! 🇵🇰
-                  </span>
-                  <span className="text-[11px] font-bold text-emerald-200 font-urdu">
-                    ۱۴ اگست کی خصوصیات کے ساتھ آپ کا لنک تیار ہے!
-                  </span>
-                </div>
-              ) : (
-                <div className="bg-black/40 border border-yellow-400/30 rounded-xl p-2.5 w-full text-[11px] text-yellow-300 font-extrabold flex items-center justify-center gap-1.5">
-                  <Info className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
-                  <span>5 Second ishtihar timer, poora hote hi "Aage Barhein" button dabayein!</span>
-                </div>
-              )}
-            </div>
+            {/* ADSTERRA 320x50 BANNER INSIDE MODAL */}
+            <AdBanner320x50 />
 
             {/* Visual Progress Bar */}
             <div className="w-full bg-black/50 h-2.5 rounded-full overflow-hidden mb-5 border border-white/20">
@@ -727,7 +665,7 @@ export default function App() {
                   : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed opacity-60"
               }`}
             >
-              <span>{isTimerFinished ? "Aage Barhein ➡️ / آگے بڑھیں" : "Baraye Meherbani Intizar Karein..."}</span>
+              <span>{isTimerFinished ? "Aage Barhein ➡️" : "Baraye Meherbani Intizar Karein..."}</span>
             </button>
 
           </div>
